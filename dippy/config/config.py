@@ -1,4 +1,3 @@
-# from __future__ import annotations
 from dippy.config.manager import ConfigManager
 from typing import Any, Callable, Optional, Union
 import bevy
