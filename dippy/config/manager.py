@@ -48,7 +48,10 @@ class ConfigManager:
 
     def get_validated_path(self, app_path: str, relative_config_path: str) -> pathlib.Path:
         """ Builds the config directory path and ensures it exists and is a directory. """
-        path = pathlib.Path(app_path).parent
+        path = pathlib.Path(app_path)
+        if path.is_file():
+            path = path.parent
+
         if relative_config_path:
             path = path / relative_config_path
 
