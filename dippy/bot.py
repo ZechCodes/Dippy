@@ -63,7 +63,9 @@ class Bot:
         config_files: Sequence[str] = ("development.yaml", "production.yaml"),
     ) -> "Bot":
         context = bevy.Context()
-        context.load(ConfigManager(application_path, config_dir))
+        context.load(
+            ConfigManager(application_path, config_dir, config_files=config_files)
+        )
         context.load(Logging(bot_name))
         bot = context.create(Bot, bot_name, status, config_files=config_files)
         context.load(bot)
