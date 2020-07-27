@@ -4,7 +4,7 @@ import pathlib
 import re
 
 
-class Config:
+class ConfigManager:
     """ Configuration File Management
 
         Provides basic functionality for resolving which config file to use, finding the appropriate loader interface,
