@@ -1,8 +1,9 @@
 from dippy.config import ConfigManager
+from dippy.config.loaders import yaml_loader
+from dippy.config.manager import ConfigLoader
 from dippy.logging import Logging
 from typing import Sequence, Type, Union
 import bevy
-import dippy.config.loaders
 import discord
 import pathlib
 
@@ -21,7 +22,6 @@ class Bot:
     ):
         self.bot_name = bot_name
 
-        self.initialize_config_loaders()
         self.logger: Logging = self.logger_factory(self.bot_name)
         self.logger.setup_logger()
 
@@ -37,16 +37,6 @@ class Bot:
         client = client_class(**kwargs)
         return client
 
-    def initialize_config_loaders(self):
-        """ Registers the basic config loaders that Dippy can use. """
-        self.config_manager.register_loader(
-            "json", r"\.json$", dippy.config.loaders.json_loader
-        )
-
-        self.config_manager.register_loader(
-            "yaml", r"\.ya?ml$", dippy.config.loaders.yaml_loader
-        )
-
     def run(self, token: str):
         self.bot.run(token)
 
@@ -60,12 +50,19 @@ class Bot:
         *,
         config_dir: str = "config",
         config_files: Sequence[str] = ("development.yaml", "production.yaml"),
+        loaders: Sequence[ConfigLoader] = (yaml_loader,),
     ) -> "Bot":
-        context = bevy.Context()
-        context.load(
-            ConfigManager(application_path, config_dir, config_files=config_files)
+        config_manager = ConfigManager(
+            application_path, config_dir, config_files=config_files
         )
+        for loader in loaders:
+            config_manager.register_loader(loader)
+
+        context = bevy.Context()
+        context.load(config_manager)
         context.load(Logging(bot_name))
+
         bot = context.create(Bot, bot_name, status)
         context.load(bot)
+
         return bot
