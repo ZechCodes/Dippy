@@ -81,7 +81,10 @@ class ConfigManager:
                 pass
             else:
                 break
-        return config_file
+        raise InvalidConfigPath(
+            f"Cannot find any of the requested config files, they either do not exist or are not valid files\n"
+            f"--- Looked in {str(self.config_path)!r} for {', '.join(map(repr, config_files))}"
+        )
 
 
 class ConfigLoader:
