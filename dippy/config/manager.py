@@ -16,14 +16,22 @@ class ConfigManager:
         directory that should contain all config files.
     """
 
-    def __init__(self, app_path: str, relative_config_path: str = ""):
+    def __init__(
+        self,
+        app_path: str,
+        relative_config_path: str = "",
+        config_files: Sequence[str] = tuple(),
+    ):
         self.cache: Dict[str:Any] = {}
         self.config_path = self.get_validated_path(app_path, relative_config_path)
         self.loaders: Dict[str, ConfigLoader] = {}
+        self.default_config_files = config_files
 
     def load(self, *config_file_names: str) -> Any:
         """ Loads a config file using the appropriate config file loader. """
-        config_file_name = self.resolve_config_file(config_file_names)
+        config_file_name = self.resolve_config_file(
+            config_file_names if config_file_names else self.default_config_files
+        )
         file_path = self.get_validated_config_path(config_file_name)
         loader = self.get_loader(config_file_name)
         return loader.load(file_path)
