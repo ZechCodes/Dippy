@@ -26,7 +26,7 @@ class Bot:
         self.logger: Logging = self.logger_factory(self.bot_name)
         self.logger.setup_logger(*config_files)
 
-        self.logger.info(f"Bot starting: {self.bot_name}")
+        self.logger.info(f"Starting bot {self.bot_name!r}")
 
         self.bot = self.create_bot_client(
             status=status, client_class=client_class, **kwargs
