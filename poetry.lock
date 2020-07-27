@@ -49,6 +49,14 @@ tests = ["coverage", "hypothesis", "pympler", "pytest (>=4.3.0)", "six", "zope.i
 
 [[package]]
 category = "main"
+description = "Simple app framework that helps you build loosely coupled applications."
+name = "bevy"
+optional = false
+python-versions = ">=3.7,<4.0"
+version = "0.3.3"
+
+[[package]]
+category = "main"
 description = "Universal encoding detector for Python 2 and 3"
 name = "chardet"
 optional = false
@@ -219,7 +227,7 @@ multidict = ">=4.0"
 typing-extensions = ">=3.7.4"
 
 [metadata]
-content-hash = "270ac604cd8fccf86c62ef17971fbf5cd53eb8aca02f6682cff19a4a23c2e7da"
+content-hash = "7e5c734916c3d18d844e14a25d0327875c0d0d5a46ed31172092609c1e773c44"
 python-versions = "^3.8"
 
 [metadata.files]
@@ -248,6 +256,10 @@ atomicwrites = [
 attrs = [
     {file = "attrs-19.3.0-py2.py3-none-any.whl", hash = "sha256:08a96c641c3a74e44eb59afb61a24f2cb9f4d7188748e76ba4bb5edfa3cb7d1c"},
     {file = "attrs-19.3.0.tar.gz", hash = "sha256:f7b7ce16570fe9965acd6d30101a28f62fb4a7f9e926b3bbc9b61f8b04247e72"},
+]
+bevy = [
+    {file = "Bevy-0.3.3-py3-none-any.whl", hash = "sha256:d697759fe2ea90c87c3261a1c2b46fee193a29fa25daf94efcfabd24913ca802"},
+    {file = "Bevy-0.3.3.tar.gz", hash = "sha256:c50b0db143bee382bfda0dc382f2012e9c90d8dc07da5a16a35d65f7aef61c9b"},
 ]
 chardet = [
     {file = "chardet-3.0.4-py2.py3-none-any.whl", hash = "sha256:fc323ffcaeaed0e0a02bf4d117757b98aed530d9ed4531e3e15460124c106691"},
