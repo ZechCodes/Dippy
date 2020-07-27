@@ -1,4 +1,4 @@
-import dippy.config.config_manager as config
+import dippy.config.manager as config
 
 
 class TestConfig:
