@@ -1,35 +1,29 @@
-from typing import Any, Optional
-import dippy.config.manager as manager
+# from __future__ import annotations
+from dippy.config.manager import ConfigManager
+from typing import Any, Callable, Optional, Union
+import bevy
 import os
+import pydantic
+import pydantic.fields
 
 
-class Config:
-    manager: manager.ConfigManager
-
-    def __init__(self, *file_names: str):
-        self.config = self.manager.load(*file_names)
-
-    def get_value(
-            self,
-            /,
-            name: str,
-            *,
-            default: Optional[Any] = None,
-            env_name: Optional[str] = None,
-            required: bool = False
-    ) -> Any:
-        """ Gets a value from the config. If it is not found it can fall back to an environment variable. """
-        if name in self.config:
-            return self.config[name]
-
-        if env_name and env_name in os.environ:
-            return os.getenv(env_name)
-
-        if required:
-            raise RequiredValueNotFound(f"The required value '{name}' was not found in the loaded config")
-
-        return default
+def EnvField(
+    env_var: str, *args, converter: Optional[Callable] = None, **kwargs
+) -> Union[pydantic.fields.FieldInfo, Any]:
+    """ Custom field factory that will load a value from the environment if it exists and if not it creates a Pydantic
+        field.
+    """
+    if env_var in os.environ:
+        value = os.getenv(env_var)
+        if converter:
+            value = converter(value)
+        return value
+    return pydantic.Field(*args, **kwargs)
 
 
-class RequiredValueNotFound(Exception):
-    ...
+class ConfigFactory(bevy.Factory):
+    """ Custom factory for creating Pydantic models from config files. """
+
+    def __call__(self, *file_names: str) -> bevy.factory.T:
+        config = self.context.get(ConfigManager).load(*file_names)
+        return self.build_type(**config)
