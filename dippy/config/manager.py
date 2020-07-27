@@ -15,8 +15,9 @@ class ConfigManager:
         the project root. It also takes a config path which should be path relative to the project root that goes to the
         directory that should contain all config files.
     """
-    def __init__(self, app_path: str, relative_config_path: str = "config"):
-        self.cache: Dict[str: Any] = {}
+
+    def __init__(self, app_path: str, relative_config_path: str = ""):
+        self.cache: Dict[str:Any] = {}
         self.config_path = self.get_validated_path(app_path, relative_config_path)
         self.loaders: Dict[str, ConfigLoader] = {}
 
