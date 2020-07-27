@@ -16,7 +16,6 @@ class Bot:
         bot_name: str,
         status: str,
         /,
-        config_files: Sequence[str],
         client_class: Type[discord.Client] = discord.Client,
         **kwargs,
     ):
@@ -24,7 +23,7 @@ class Bot:
 
         self.initialize_config_loaders()
         self.logger: Logging = self.logger_factory(self.bot_name)
-        self.logger.setup_logger(*config_files)
+        self.logger.setup_logger()
 
         self.logger.info(f"Starting bot {self.bot_name!r}")
 
@@ -67,6 +66,6 @@ class Bot:
             ConfigManager(application_path, config_dir, config_files=config_files)
         )
         context.load(Logging(bot_name))
-        bot = context.create(Bot, bot_name, status, config_files=config_files)
+        bot = context.create(Bot, bot_name, status)
         context.load(bot)
         return bot
