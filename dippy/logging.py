@@ -41,8 +41,8 @@ class Logging:
     def __init__(self, name: str):
         self.logger = logging.getLogger(name)
 
-    def setup_logger(self, *config_files: str):
-        settings = self.config(*config_files, key="logging")
+    def setup_logger(self):
+        settings = self.config(key="logging")
         self.logger.setLevel(settings.level)
         logging.basicConfig(
             format=settings.format,
