@@ -1,5 +1,6 @@
 from __future__ import annotations
 from typing import Any, Callable, Dict, Sequence, Union
+import functools
 import pathlib
 import re
 
@@ -96,11 +97,17 @@ class ConfigManager:
 
         return path
 
+    @functools.singledispatchmethod
     def register_loader(
         self, name: str, regex: Union[str, re.Pattern], loader: Callable
     ):
-        """ Registers a config loader with the config manager. """
+        """ Creates and registers a config loader with the config manager. """
         self.loaders[name] = ConfigLoader(name, regex, loader)
+
+    @register_loader.register
+    def _(self, config_loader: ConfigLoader):
+        """ Registers a config loader with the config manager. """
+        self.loaders[config_loader.name] = config_loader
 
     def resolve_config_file(self, config_files: Sequence[str]) -> str:
         """ Finds the first config file that exists. """
