@@ -25,6 +25,10 @@ class ConfigFactory(bevy.Factory):
 
     def __call__(self, *file_names: str, key: Optional[str] = None) -> bevy.factory.T:
         config = self.context.get(ConfigManager).load(*file_names)
+        if not config:
+            config = {}
+
         if key:
-            config = config[key]
+            config = config.get(key, {})
+
         return self.build_type(**config)
