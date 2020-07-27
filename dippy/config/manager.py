@@ -34,7 +34,9 @@ class ConfigManager:
             if loader.matches(file_name):
                 return loader
         else:
-            raise NoConfigLoaderFound(f"No registered config loader matched the requested file: '{file_name}'")
+            raise NoConfigLoaderFound(
+                f"No registered config loader matched the requested file: '{file_name}'"
+            )
 
     def get_validated_config_path(self, file_name: str) -> pathlib.Path:
         """ Builds a config file path and ensures it exists and is a file. """
@@ -46,7 +48,9 @@ class ConfigManager:
 
         return path
 
-    def get_validated_path(self, app_path: str, relative_config_path: str) -> pathlib.Path:
+    def get_validated_path(
+        self, app_path: str, relative_config_path: str
+    ) -> pathlib.Path:
         """ Builds the config directory path and ensures it exists and is a directory. """
         path = pathlib.Path(app_path)
         if path.is_file():
@@ -62,7 +66,9 @@ class ConfigManager:
 
         return path
 
-    def register_loader(self, name: str, regex: Union[str, re.Pattern], loader: Callable):
+    def register_loader(
+        self, name: str, regex: Union[str, re.Pattern], loader: Callable
+    ):
         """ Registers a config loader with the config manager. """
         self.loaders[name] = ConfigLoader(name, regex, loader)
 
@@ -79,10 +85,17 @@ class ConfigManager:
 
 
 class ConfigLoader:
-    def __init__(self, name: str, regex: Union[re.Pattern, str], loader: Callable[[pathlib.Path], Any]):
+    def __init__(
+        self,
+        name: str,
+        regex: Union[re.Pattern, str],
+        loader: Callable[[pathlib.Path], Any],
+    ):
         self.loader = loader
         self.name = name
-        self.pattern: re.Pattern = regex if isinstance(regex, re.Pattern) else re.compile(regex, re.IGNORECASE)
+        self.pattern: re.Pattern = regex if isinstance(
+            regex, re.Pattern
+        ) else re.compile(regex, re.IGNORECASE)
 
     def load(self, file_path: pathlib.Path) -> Any:
         """ Call the loader with the given file path. """
