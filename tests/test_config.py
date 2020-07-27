@@ -1,6 +1,8 @@
 import bevy
 import dippy.config.config as config
 import dippy.config.manager as manager
+import pydantic
+import pytest
 import os
 
 
@@ -40,34 +42,56 @@ class TestConfig:
         c.register_loader("test_load", r"\.py$", lambda f: f.name)
         assert c.load("__init__.py", "test_config.py") == "__init__.py"
 
-    def test_get_value(self):
+    @pytest.fixture()
+    def model(self):
+        class Model(pydantic.BaseModel):
+            test: str
+            env: str = config.EnvField(env_var="TESTING", default="NOT SET")
+
+        return Model
+
+    @pytest.fixture()
+    def model_env(self):
+        os.environ["TESTING"] = "TEST"
+
+        class Model(pydantic.BaseModel):
+            test: str
+            env: str = config.EnvField(env_var="TESTING", default="NOT SET")
+
+        os.environ.pop("TESTING")
+
+        return Model
+
+    @pytest.fixture()
+    def config_context(self):
         m = manager.ConfigManager(__file__, "")
         m.register_loader("test_load", r"\.py$", lambda f: {"test": "testing"})
-        context = bevy.Context().load(m)
-        c = context.create(config.Config, __file__, "")
-        assert c.get_value("test") == "testing"
+        return bevy.Context().load(m)
 
-    def test_get_value_required(self):
-        m = manager.ConfigManager(__file__, "")
-        m.register_loader("test_load", r"\.py$", lambda f: {})
-        context = bevy.Context().load(m)
-        c = context.create(config.Config, __file__, "")
-        try:
-            c.get_value("test", required=True)
-        except Exception as e:
-            assert isinstance(e, config.RequiredValueNotFound)
+    @pytest.fixture()
+    def component(self, model):
+        class Component:
+            factory: config.ConfigFactory[model]
 
-    def test_get_value_default(self):
-        m = manager.ConfigManager(__file__, "")
-        m.register_loader("test_load", r"\.py$", lambda f: {})
-        context = bevy.Context().load(m)
-        c = context.create(config.Config, __file__, "")
-        assert c.get_value("test", default="foobar") == "foobar"
+            def config(self, *files):
+                return self.factory(*files)
 
-    def test_get_value_environment(self):
-        os.environ["TESTING"] = "foobar"
-        m = manager.ConfigManager(__file__, "")
-        m.register_loader("test_load", r"\.py$", lambda f: {})
-        context = bevy.Context().load(m)
-        c = context.create(config.Config, __file__, "")
-        assert c.get_value("test", env_name="TESTING") == "foobar"
+        return Component
+
+    @pytest.fixture()
+    def component_env(self, model_env):
+        class Component:
+            factory: config.ConfigFactory[model_env]
+
+            def config(self, *files):
+                return self.factory(*files)
+
+        return Component
+
+    def test_get_value(self, config_context, component, model):
+        c = config_context.create(component)
+        assert c.config("test_config.py") == model(test="testing", env="NOT SET")
+
+    def test_get_value_environment(self, config_context, component_env, model_env):
+        c = config_context.create(component_env)
+        assert c.config("test_config.py") == model_env(test="testing", env="TEST")
