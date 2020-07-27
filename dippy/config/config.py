@@ -23,6 +23,8 @@ def EnvField(
 class ConfigFactory(bevy.Factory):
     """ Custom factory for creating Pydantic models from config files. """
 
-    def __call__(self, *file_names: str) -> bevy.factory.T:
+    def __call__(self, *file_names: str, key: Optional[str] = None) -> bevy.factory.T:
         config = self.context.get(ConfigManager).load(*file_names)
+        if key:
+            config = config[key]
         return self.build_type(**config)
