@@ -4,6 +4,28 @@ import pathlib
 import re
 
 
+class ConfigLoader:
+    def __init__(
+        self,
+        name: str,
+        regex: Union[re.Pattern, str],
+        loader: Callable[[pathlib.Path], Any],
+    ):
+        self.loader = loader
+        self.name = name
+        self.pattern: re.Pattern = regex if isinstance(
+            regex, re.Pattern
+        ) else re.compile(regex, re.IGNORECASE)
+
+    def load(self, file_path: pathlib.Path) -> Any:
+        """ Call the loader with the given file path. """
+        return self.loader(file_path)
+
+    def matches(self, file_name: str) -> bool:
+        """ Determine if the loader's pattern matches the given file name. """
+        return self.pattern.search(file_name) is not None
+
+
 class ConfigManager:
     """ Configuration File Management
 
@@ -93,28 +115,6 @@ class ConfigManager:
             f"Cannot find any of the requested config files, they either do not exist or are not valid files\n"
             f"--- Looked in {str(self.config_path)!r} for {', '.join(map(repr, config_files))}"
         )
-
-
-class ConfigLoader:
-    def __init__(
-        self,
-        name: str,
-        regex: Union[re.Pattern, str],
-        loader: Callable[[pathlib.Path], Any],
-    ):
-        self.loader = loader
-        self.name = name
-        self.pattern: re.Pattern = regex if isinstance(
-            regex, re.Pattern
-        ) else re.compile(regex, re.IGNORECASE)
-
-    def load(self, file_path: pathlib.Path) -> Any:
-        """ Call the loader with the given file path. """
-        return self.loader(file_path)
-
-    def matches(self, file_name: str) -> bool:
-        """ Determine if the loader's pattern matches the given file name. """
-        return self.pattern.search(file_name) is not None
 
 
 class InvalidConfigPath(Exception):
