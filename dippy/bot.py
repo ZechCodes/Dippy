@@ -1,3 +1,4 @@
+from dippy.components import ComponentManager
 from dippy.config import ConfigManager
 from dippy.config.loaders import yaml_loader
 from dippy.config.manager import ConfigLoader
@@ -9,6 +10,7 @@ import pathlib
 
 
 class Bot:
+    component_manager: ComponentManager
     config_manager: ConfigManager
     logger_factory: bevy.Factory[Logging]
 
@@ -27,6 +29,9 @@ class Bot:
         self.logger.setup_logger()
 
         self.logger.info(f"Starting bot {self.bot_name!r}")
+
+        self.component_manager.load_components(pathlib.Path(application_path))
+        self.component_manager.create_components()
 
         self.bot = self.create_bot_client(
             status=status, client_class=client_class, **kwargs
