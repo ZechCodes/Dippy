@@ -22,7 +22,7 @@ class LoggingConfigModel(pydantic.BaseModel):
             )
         return levels[value.casefold()]
 
-    format: str = "%(asctime)s: %(levelname)-9s %(name)-16s :: %(message)s"
+    format: str = "%(asctime)s  %(levelname)-5s  %(name)-32s  %(message)s"
     date_format: str = "%m/%d/%Y %I:%M:%S %p"
 
     level: int = dippy.config.EnvField(
