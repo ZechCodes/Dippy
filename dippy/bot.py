@@ -17,6 +17,7 @@ class Bot:
         bot_name: str,
         status: str,
         /,
+        application_path: Union[pathlib.Path, str],
         client_class: Type[discord.Client] = discord.Client,
         **kwargs,
     ):
@@ -63,6 +64,7 @@ class Bot:
 
 
         bot = context.create(Bot, bot_name, status)
+        bot = context.create(Bot, bot_name, status, application_path)
         context.load(bot)
 
         return bot
