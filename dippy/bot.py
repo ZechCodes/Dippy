@@ -53,17 +53,17 @@ class Bot:
         config_files: Sequence[str] = ("development.yaml", "production.yaml"),
         loaders: Sequence[ConfigLoader] = (yaml_loader,),
     ) -> "Bot":
-        config_manager = ConfigManager(
-            application_path, config_dir, config_files=config_files
-        )
-        for loader in loaders:
-            config_manager.register_loader(loader)
-
         context = bevy.Context()
-        context.load(config_manager)
+        context.load(
+            ConfigManager(
+                application_path,
+                config_dir,
+                config_files=config_files,
+                config_loaders=loaders,
+            )
+        )
+        context.load(context.create(ComponentManager, bot_name))
 
-
-        bot = context.create(Bot, bot_name, status)
         bot = context.create(Bot, bot_name, status, application_path)
         context.load(bot)
 
