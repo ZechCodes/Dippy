@@ -40,14 +40,16 @@ class Logging:
 
     def __init__(self, name: str):
         self.logger = logging.getLogger(name)
+        self.settings = self.config(key="logging")
+
+        self.logger.setLevel(self.settings.level)
 
     def setup_logger(self):
-        settings = self.config(key="logging")
-        self.logger.setLevel(settings.level)
+        self.logger.setLevel(self.settings.level)
         logging.basicConfig(
-            format=settings.format,
-            datefmt=settings.date_format,
-            level=settings.global_level,
+            format=self.settings.format,
+            datefmt=self.settings.date_format,
+            level=self.settings.global_level,
         )
 
     def debug(self, msg, *args, **kwargs):
