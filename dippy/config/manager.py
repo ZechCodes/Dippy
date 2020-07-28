@@ -44,11 +44,15 @@ class ConfigManager:
         app_path: str,
         relative_config_path: str = "",
         config_files: Sequence[str] = tuple(),
+        config_loaders: Sequence[ConfigLoader] = tuple(),
     ):
         self.cache: Dict[str:Any] = {}
         self.config_path = self.get_validated_path(app_path, relative_config_path)
         self.loaders: Dict[str, ConfigLoader] = {}
         self.default_config_files = config_files
+
+        for loader in config_loaders:
+            self.register_loader(loader)
 
     def load(self, *config_file_names: str) -> Any:
         """ Loads a config file using the appropriate config file loader. """
