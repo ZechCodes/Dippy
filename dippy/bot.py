@@ -23,6 +23,7 @@ class Bot:
         self.bot_name = bot_name
 
         self.logger: Logging = self.logger_factory(self.bot_name)
+        self.logger.setup_logger()
 
         self.logger.info(f"Starting bot {self.bot_name!r}")
 
@@ -60,7 +61,6 @@ class Bot:
         context = bevy.Context()
         context.load(config_manager)
 
-        context.create(Logging, bot_name).setup_logger()
 
         bot = context.create(Bot, bot_name, status)
         context.load(bot)
