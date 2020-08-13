@@ -1,7 +1,6 @@
 from __future__ import annotations
 from abc import ABC, abstractmethod
-from dippy.filters.types import *
-from dippy.filters.event import Event
+from dippy.filters.event import *
 from enum import Enum, auto
 from typing import Callable, Iterable
 
