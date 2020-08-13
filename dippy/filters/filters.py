@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 from dippy.filters.types import *
 from dippy.filters.event import Event
 from enum import Enum, auto
-from typing import Callable, Iterable, Sequence
+from typing import Callable, Iterable
 
 
 class AggregationType(Enum):
