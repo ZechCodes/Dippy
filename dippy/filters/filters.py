@@ -77,21 +77,6 @@ class AggregateFilter(BaseFilter):
         return super().__or__(filter_)
 
 
-class OrAggregateFilter(BaseFilter):
-    """ This filter only matches events that match any filter in the aggregate. """
-
-    def __init__(self, *filters: BaseFilter):
-        self.filters = filters
-
-    def matches(self, event: Event) -> bool:
-        """ Matches all events that match any filters in the aggregate. """
-        return any(filter_.matches(event) for filter_ in self.filters)
-
-    def __or__(self, filter_: BaseFilter) -> OrAggregateFilter:
-        self.filters = (*self.filters, filter_)
-        return self
-
-
 class GlobalFilter(BaseFilter):
     """ This filter will match any event. """
 
