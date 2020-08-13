@@ -88,7 +88,7 @@ class GlobalFilter(BaseFilter):
 class LabelFilter(BaseFilter):
     """ This filter only matches events that have at least one matching label. """
 
-    def __init__(self, *, labels: Sequence[Label] = tuple()):
+    def __init__(self, *labels: Label):
         self.labels = set(labels)
 
     def matches(self, event: Event) -> bool:
