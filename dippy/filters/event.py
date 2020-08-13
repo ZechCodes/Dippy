@@ -1,6 +1,12 @@
 from dataclasses import dataclass, field
-from dippy.filters.types import *
 from typing import Optional, Set
+
+
+GuildID = int
+ChannelID = int
+RoleID = int
+UserID = int
+Label = str
 
 
 @dataclass
