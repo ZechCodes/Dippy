@@ -2,10 +2,10 @@ from dippy.components import ComponentManager
 from dippy.config import ConfigManager
 from dippy.config.loaders import yaml_loader
 from dippy.config.manager import ConfigLoader
+from dippy.events import EventClient
 from dippy.logging import Logging
-from typing import Sequence, Type, Union
+from typing import Sequence, Union
 import bevy
-import discord
 import pathlib
 
 
@@ -20,7 +20,6 @@ class Bot:
         status: str,
         /,
         application_path: Union[pathlib.Path, str],
-        client_class: Type[discord.Client] = discord.Client,
         **kwargs,
     ):
         self.bot_name = bot_name
@@ -33,15 +32,10 @@ class Bot:
         self.component_manager.load_components(pathlib.Path(application_path))
         self.component_manager.create_components()
 
-        self.bot = self.create_bot_client(
-            status=status, client_class=client_class, **kwargs
-        )
+        self.bot = self.create_bot_client(status=status, **kwargs)
 
-    def create_bot_client(
-        self, client_class: Type[discord.Client], **kwargs
-    ) -> discord.Client:
-        client = client_class(**kwargs)
-        return client
+    def create_bot_client(self, **kwargs) -> EventClient:
+        return EventClient(**kwargs)
 
     def run(self, token: str):
         self.bot.run(token)
