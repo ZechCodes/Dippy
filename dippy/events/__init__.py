@@ -1,4 +1,4 @@
-from dippy.events.client import EventClient
+from dippy.events.hub import EventHub
 
 
-__all__ = ["EventClient"]
+__all__ = ["EventHub"]
