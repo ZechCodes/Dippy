@@ -45,8 +45,11 @@ def test_bot_on_message(message):
     loop = asyncio.new_event_loop()
     bot = dippy.Bot.create("Test Bot", __file__, client=MockClient, loop=loop)
 
-    async def on_message(m: discord.Message):
+    async def on_message(m: discord.Message, c: discord.TextChannel, g: discord.Guild):
         nonlocal ran
+        assert c is text_channel
+        assert g is guild
+        assert m is message
         ran = True
         await bot.client.close()
 
