@@ -189,3 +189,27 @@ def test_bot_on_direct_message(direct_message, dm_channel, user):
     bot.run("NOT A TOKEN")
 
     assert ran
+
+
+def test_component_on_message(message, text_channel, guild):
+    ran = False
+
+    class TestComponent(dippy.Component):
+        @dippy.event("message")
+        async def watch_for_messages(self, m, c, g):
+            nonlocal ran
+            assert c is text_channel
+            assert g is guild
+            assert m is message
+            ran = True
+
+    loop = asyncio.new_event_loop()
+    bot = dippy.create("Test Bot", __file__, client=MockClient, loop=loop)
+
+    async def runner():
+        bot.client.dispatch("message", message)
+
+    loop.create_task(runner())
+    bot.run("NOT A TOKEN")
+
+    assert ran
