@@ -165,3 +165,27 @@ def test_bot_on_message(message, text_channel, guild):
     bot.run("NOT A TOKEN")
 
     assert ran
+
+
+def test_bot_on_direct_message(direct_message, dm_channel, user):
+    ran = False
+
+    loop = asyncio.new_event_loop()
+    bot = dippy.Bot.create("Test Bot", __file__, client=MockClient, loop=loop)
+
+    async def on_message(m: discord.Message, c: discord.DMChannel, r: discord.User):
+        nonlocal ran
+        assert c is dm_channel
+        assert r is user
+        assert m is direct_message
+        ran = True
+        await bot.client.close()
+
+    async def runner():
+        bot.client.dispatch("message", direct_message)
+
+    bot.events.on("direct_message", on_message)
+    loop.create_task(runner())
+    bot.run("NOT A TOKEN")
+
+    assert ran
