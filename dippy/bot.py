@@ -59,7 +59,7 @@ class Bot:
         )
         context.load(context.create(ComponentManager, bot_name))
 
-        bot = context.create(Bot, bot_name, status, application_path)
+        bot = context.create(cls, bot_name, status, application_path)
         context.load(bot)
 
         return bot
