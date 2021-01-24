@@ -1,13 +1,13 @@
 from dippy.components import Component
 from dippy.config import ConfigFactory
 from dippy.logging import Logging
-from typing import List, Optional
 from types import ModuleType
+from typing import List, Optional
 import bevy
+import enum
 import importlib.util
 import pathlib
 import pydantic
-import enum
 
 
 class ComponentAutoloadPolicyEnum(enum.Enum):
