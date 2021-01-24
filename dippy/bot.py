@@ -20,8 +20,8 @@ class Bot(bevy.Injectable):
     def __init__(
         self,
         bot_name: str,
-        /,
         application_path: Union[pathlib.Path, str],
+        /,
         **kwargs,
     ):
         self.bot_name = bot_name
