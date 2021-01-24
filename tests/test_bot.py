@@ -49,8 +49,6 @@ def text_channel(guild):
 
 
 @pytest.fixture()
-def message(text_channel):
-    return discord.Message(
 def dm_channel(guild, user):
     class CustomDMChannel(discord.DMChannel):
         def __init__(self, *, me, state, data):
@@ -69,6 +67,15 @@ def dm_channel(guild, user):
 
 
 @pytest.fixture()
+def message(text_channel, user):
+    class CustomMessage(discord.Message):
+        def _handle_member(self, member):
+            self.member = member
+
+        def _handle_author(self, author):
+            self.author = author
+
+    return CustomMessage(
         state="TESTING",
         channel=text_channel,
         data={
@@ -84,6 +91,14 @@ def dm_channel(guild, user):
             "mention_everyone": False,
             "tts": False,
             "content": "This is content for a Test Message",
+            "author": user,
+            "member": user,
+            "mentions": [],
+            "mention_roles": [],
+            "call": None,
+            "flags": [],
+        },
+    )
         },
     )
 
