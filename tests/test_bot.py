@@ -99,6 +99,39 @@ def message(text_channel, user):
             "flags": [],
         },
     )
+
+
+@pytest.fixture()
+def direct_message(dm_channel, user):
+    class CustomMessage(discord.Message):
+        def _handle_member(self, member):
+            self.member = member
+
+        def _handle_author(self, author):
+            self.author = author
+
+    return CustomMessage(
+        state="TESTING",
+        channel=dm_channel,
+        data={
+            "id": 0,
+            "webhook_id": 0,
+            "attachments": [],
+            "embeds": [],
+            "application": None,
+            "activity": None,
+            "edited_timestamp": None,
+            "type": None,
+            "pinned": False,
+            "mention_everyone": False,
+            "tts": False,
+            "content": "This is content for a Test Message",
+            "author": user,
+            "member": user,
+            "mentions": [],
+            "mention_roles": [],
+            "call": None,
+            "flags": [],
         },
     )
 
