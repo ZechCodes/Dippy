@@ -1,4 +1,4 @@
-from dippy.events.hub import EventHub
+from dippy.events.hub import EventHub, event
 
 
-__all__ = ["EventHub"]
+__all__ = ["EventHub", "event"]
