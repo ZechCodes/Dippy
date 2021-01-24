@@ -51,6 +51,24 @@ def text_channel(guild):
 @pytest.fixture()
 def message(text_channel):
     return discord.Message(
+def dm_channel(guild, user):
+    class CustomDMChannel(discord.DMChannel):
+        def __init__(self, *, me, state, data):
+            self._state = state
+            self.recipient = user
+            self.me = me
+            self.id = int(data["id"])
+
+    return CustomDMChannel(
+        state="TESTING",
+        me=user,
+        data={
+            "id": 0,
+        },
+    )
+
+
+@pytest.fixture()
         state="TESTING",
         channel=text_channel,
         data={
