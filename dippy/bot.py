@@ -33,7 +33,7 @@ class Bot(bevy.Injectable):
         self.component_manager.load_components(pathlib.Path(application_path))
         self.component_manager.create_components()
 
-        self._setup_event_forwarding()
+        self._setup_event_dispatch()
 
     def run(self, token: str):
         self.client.run(token)
@@ -48,7 +48,7 @@ class Bot(bevy.Injectable):
                 "message", message, message.channel, message.channel.guild
             )
 
-    def _setup_event_forwarding(self):
+    def _setup_event_dispatch(self):
         # Try to use the listen method if possible, otherwise fallback to using event
         # listen is preferred as it won't override any existing event handlers defined on the client
         register: Callable[[Callable], None] = (
