@@ -11,10 +11,35 @@ class MockClient(discord.Client):
 
 
 @pytest.fixture()
-def message():
-    m = discord.Message(
+def guild():
+    return discord.Guild(
         state="TESTING",
-        channel=None,
+        data={
+            "name": "Test Guild",
+            "id": 0,
+        },
+    )
+
+
+@pytest.fixture()
+def text_channel(guild):
+    return discord.TextChannel(
+        state="TESTING",
+        guild=guild,
+        data={
+            "name": "Test Text Channel",
+            "id": 0,
+            "type": "TEXT",
+            "position": 0,
+        },
+    )
+
+
+@pytest.fixture()
+def message(text_channel):
+    return discord.Message(
+        state="TESTING",
+        channel=text_channel,
         data={
             "id": 0,
             "webhook_id": 0,
@@ -39,7 +64,7 @@ def test_bot_start_up():
         bot.run("NOT A TOKEN")
 
 
-def test_bot_on_message(message):
+def test_bot_on_message(message, text_channel, guild):
     ran = False
 
     loop = asyncio.new_event_loop()
