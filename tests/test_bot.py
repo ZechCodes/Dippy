@@ -22,6 +22,19 @@ def guild():
 
 
 @pytest.fixture()
+def user():
+    return discord.User(
+        state="TESTING",
+        data={
+            "username": "Test User",
+            "id": 0,
+            "discriminator": "0000",
+            "avatar": "TEST AVATAR",
+        },
+    )
+
+
+@pytest.fixture()
 def text_channel(guild):
     return discord.TextChannel(
         state="TESTING",
