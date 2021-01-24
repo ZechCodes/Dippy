@@ -1,4 +1,5 @@
 from typing import Sequence
+import bevy
 import dippy
 import logging
 import pydantic
@@ -26,7 +27,9 @@ class LoggingConfigModel(pydantic.BaseModel):
     date_format: str = "%m/%d/%Y %I:%M:%S %p"
 
     level: int = dippy.config.EnvField(
-        env_var="DIPPY_LOG_LEVEL", converter=validate_level, default=logging.WARN,
+        env_var="DIPPY_LOG_LEVEL",
+        converter=validate_level,
+        default=logging.WARN,
     )
     global_level: int = dippy.config.EnvField(
         env_var="DIPPY_LOG_GLOBAL_LEVEL",
@@ -35,7 +38,7 @@ class LoggingConfigModel(pydantic.BaseModel):
     )
 
 
-class Logging:
+class Logging(bevy.Injectable):
     config: dippy.config.ConfigFactory[LoggingConfigModel]
 
     def __init__(self, name: str):

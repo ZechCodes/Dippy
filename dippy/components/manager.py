@@ -26,7 +26,7 @@ class ComponentSettingsModel(pydantic.BaseModel):
     policy: ComponentAutoloadPolicyEnum = ComponentAutoloadPolicyEnum.ENABLED
 
 
-class ComponentManager:
+class ComponentManager(bevy.Injectable):
     config_factory: ConfigFactory[ComponentSettingsModel]
     logger_factory: bevy.Factory[Logging]
     context: bevy.Context
@@ -79,8 +79,8 @@ class ComponentManager:
             )
             logger.debug("Creating component")
             context = self.context.branch()
-            context.load(logger)
-            context.load(context.create(component))
+            context.add(logger)
+            context.add(context.create(component))
 
     def _import(self, path: pathlib.Path) -> ModuleType:
         module_spec = importlib.util.spec_from_file_location(path.stem, path)

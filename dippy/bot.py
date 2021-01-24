@@ -9,7 +9,7 @@ import bevy
 import pathlib
 
 
-class Bot:
+class Bot(bevy.Injectable):
     component_manager: ComponentManager
     config_manager: ConfigManager
     logger_factory: bevy.Factory[Logging]
