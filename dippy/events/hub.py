@@ -1,7 +1,8 @@
 from __future__ import annotations
 from asyncio import iscoroutine, iscoroutinefunction
 from collections import defaultdict
-from typing import Any, Callable, Coroutine
+from types import MethodType
+from typing import Callable, Coroutine
 
 
 class EventHub:
@@ -27,3 +28,22 @@ class EventHub:
     def stop(self, event_name: str, callback: Callable[[], Coroutine]):
         """Removes a callback from listening for an event."""
         self._handlers[event_name].remove(callback)
+
+
+class EventHandler:
+    def __init__(self, event: str, callback: Callable[[], Coroutine]):
+        self.event = event
+        self.callback = callback
+
+    def __get__(self, instance) -> Callable:
+        return MethodType(self, instance)
+
+    def __call__(self, *args, **kwargs) -> Coroutine:
+        return self.callback(*args, **kwargs)
+
+
+def event(event_name: str) -> Callable:
+    def register(callback: Callable[[], Coroutine]) -> EventHandler:
+        return EventHandler(event_name, callback)
+
+    return register
