@@ -13,7 +13,7 @@ def test_event_emit():
 
     hub = EventHub()
     hub.on("testing", listener)
-    asyncio.get_event_loop().run_until_complete(hub.emit("testing", data))
+    asyncio.new_event_loop().run_until_complete(hub.emit("testing", data))
 
     assert data == event_data
 
@@ -31,7 +31,7 @@ def test_event_emit_multiple_handlers():
     hub = EventHub()
     hub.on("testing", listener_a)
     hub.on("testing", listener_b)
-    asyncio.get_event_loop().run_until_complete(hub.emit("testing", data))
+    asyncio.new_event_loop().run_until_complete(hub.emit("testing", data))
 
     assert sorted(event_data) == ["a", "b"]
 
@@ -50,7 +50,7 @@ def test_event_stop():
     hub.on("testing", listener_a)
     hub.on("testing", listener_b)
     hub.stop("testing", listener_a)
-    asyncio.get_event_loop().run_until_complete(hub.emit("testing", data))
+    asyncio.new_event_loop().run_until_complete(hub.emit("testing", data))
 
     assert sorted(event_data) == ["b"]
 
@@ -69,7 +69,7 @@ def test_event_stop():
     hub.on("testing", listener_a)
     hub.on("testing", listener_b)
     hub.stop("testing", listener_a)
-    asyncio.get_event_loop().run_until_complete(hub.emit("testing", data))
+    asyncio.new_event_loop().run_until_complete(hub.emit("testing", data))
 
     assert sorted(event_data) == ["b"]
 
