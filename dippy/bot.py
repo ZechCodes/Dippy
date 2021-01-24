@@ -2,7 +2,7 @@ from dippy.components import ComponentManager
 from dippy.config import ConfigManager
 from dippy.config.loaders import yaml_loader
 from dippy.config.manager import ConfigLoader
-from dippy.events import EventClient
+from dippy.events import EventHub
 from dippy.logging import Logging
 from typing import Sequence, Union
 import bevy
@@ -13,6 +13,7 @@ class Bot:
     component_manager: ComponentManager
     config_manager: ConfigManager
     logger_factory: bevy.Factory[Logging]
+    events: EventHub
 
     def __init__(
         self,
@@ -31,11 +32,6 @@ class Bot:
 
         self.component_manager.load_components(pathlib.Path(application_path))
         self.component_manager.create_components()
-
-        self.bot = self.create_bot_client(status=status, **kwargs)
-
-    def create_bot_client(self, **kwargs) -> EventClient:
-        return EventClient(**kwargs)
 
     def run(self, token: str):
         self.bot.run(token)
