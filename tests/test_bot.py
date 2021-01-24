@@ -1,10 +1,17 @@
 import asyncio
 import dippy
 import discord
+import discord.ext.commands
 import pytest
 
 
 class MockClient(discord.Client):
+    async def start(self, *args, **kwargs):
+        """ Start the client on the event loop but don't connect to discord. """
+        return
+
+
+class MockBot(discord.ext.commands.Bot):
     async def start(self, *args, **kwargs):
         """ Start the client on the event loop but don't connect to discord. """
         return
@@ -165,6 +172,39 @@ def test_bot_on_message(message, text_channel, guild):
     bot.run("NOT A TOKEN")
 
     assert ran
+
+
+def test_bot_on_message_using_bot(message, text_channel, guild):
+    ran = 0
+
+    loop = asyncio.new_event_loop()
+    bot = dippy.create(
+        "Test Bot", __file__, client=MockBot, loop=loop, command_prefix="!"
+    )
+
+    async def watch_for_message(
+        m: discord.Message, c: discord.TextChannel, g: discord.Guild
+    ):
+        nonlocal ran
+        assert c is text_channel
+        assert g is guild
+        assert m is message
+        ran += 2
+        await bot.client.close()
+
+    async def on_message(m):
+        nonlocal ran
+        ran += 1
+
+    async def runner():
+        bot.client.dispatch("message", message)
+
+    bot.client.event(on_message)
+    bot.events.on("message", watch_for_message)
+    loop.create_task(runner())
+    bot.run("NOT A TOKEN")
+
+    assert ran == 3
 
 
 def test_bot_on_direct_message(direct_message, dm_channel, user):
