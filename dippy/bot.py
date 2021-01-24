@@ -30,7 +30,11 @@ class Bot(bevy.Injectable):
         self.logger: Logging = self.logger_factory(self.bot_name)
         self.logger.setup_logger()
 
-        self.logger.info(f"Starting bot {self.bot_name!r}")
+        self.logger.info(
+            f"Starting bot\n"
+            f"  Name: {self.bot_name!r}\n"
+            f"  Path: {self.path.resolve()} ({'EXISTS' if self.path.exists() else 'DOES NOT EXIST'})\n"
+        )
 
         self.component_manager.load_components(pathlib.Path(application_path))
         self.component_manager.create_components()
