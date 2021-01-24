@@ -25,6 +25,7 @@ class Bot(bevy.Injectable):
         **kwargs,
     ):
         self.bot_name = bot_name
+        self.path = self._tidy_app_path(application_path)
 
         self.logger: Logging = self.logger_factory(self.bot_name)
         self.logger.setup_logger()
@@ -36,6 +37,10 @@ class Bot(bevy.Injectable):
 
     def run(self, token: str):
         self.client.run(token)
+
+    def _tidy_app_path(self, path: Union[pathlib.Path, str]) -> pathlib.Path:
+        tidy_path = pathlib.Path(path)
+        return tidy_path if tidy_path.is_dir() else tidy_path.parent
 
     @classmethod
     def create(
