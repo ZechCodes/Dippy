@@ -66,11 +66,11 @@ class TestConfig:
     def config_context(self):
         m = manager.ConfigManager(__file__, "")
         m.register_loader("test_load", r"\.py$", lambda f: {"test": "testing"})
-        return bevy.Context().load(m)
+        return bevy.Context().add(m)
 
     @pytest.fixture()
     def component(self, model):
-        class Component:
+        class Component(bevy.Injectable):
             factory: config.ConfigFactory[model]
 
             def config(self, *files):
@@ -80,7 +80,7 @@ class TestConfig:
 
     @pytest.fixture()
     def component_env(self, model_env):
-        class Component:
+        class Component(bevy.Injectable):
             factory: config.ConfigFactory[model_env]
 
             def config(self, *files):
