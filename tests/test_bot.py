@@ -147,7 +147,7 @@ def test_bot_on_message(message, text_channel, guild):
     ran = False
 
     loop = asyncio.new_event_loop()
-    bot = dippy.Bot.create("Test Bot", __file__, client=MockClient, loop=loop)
+    bot = dippy.create("Test Bot", __file__, client=MockClient, loop=loop)
 
     async def on_message(m: discord.Message, c: discord.TextChannel, g: discord.Guild):
         nonlocal ran
@@ -171,7 +171,7 @@ def test_bot_on_direct_message(direct_message, dm_channel, user):
     ran = False
 
     loop = asyncio.new_event_loop()
-    bot = dippy.Bot.create("Test Bot", __file__, client=MockClient, loop=loop)
+    bot = dippy.create("Test Bot", __file__, client=MockClient, loop=loop)
 
     async def on_message(m: discord.Message, c: discord.DMChannel, r: discord.User):
         nonlocal ran
