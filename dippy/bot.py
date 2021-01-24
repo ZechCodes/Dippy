@@ -70,7 +70,7 @@ class Bot(bevy.Injectable):
         )
         context.add(context.create(ComponentManager, bot_name))
 
-        context.add(discord.Client(**client_options))
+        context.add(client if client else discord.Client(**client_options))
 
         bot = context.create(cls, bot_name, application_path)
         context.add(bot)
