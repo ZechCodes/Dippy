@@ -1,7 +1,7 @@
 from __future__ import annotations
 from asyncio import iscoroutine, iscoroutinefunction
 from collections import defaultdict
-from typing import Any, Coroutine
+from typing import Any, Callable, Coroutine
 
 
 class EventHub:
@@ -13,7 +13,7 @@ class EventHub:
         for handler in self._handlers.get(event_name, []):
             await handler(event_data)
 
-    def on(self, event_name: str, callback: Coroutine):
+    def on(self, event_name: str, callback: Callable[[], Coroutine]):
         """Registers a coroutine to listen for an event.
 
         Raises ValueError if the callback is not a coroutine."""
@@ -24,6 +24,6 @@ class EventHub:
 
         self._handlers[event_name].add(callback)
 
-    def stop(self, event_name: str, callback: Coroutine):
+    def stop(self, event_name: str, callback: Callable[[], Coroutine]):
         """Removes a callback from listening for an event."""
         self._handlers[event_name].remove(callback)
