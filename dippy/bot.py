@@ -4,7 +4,7 @@ from dippy.config.loaders import yaml_loader
 from dippy.config.manager import ConfigLoader
 from dippy.events import EventHub
 from dippy.logging import Logging
-from typing import Optional, Sequence, Type, Union
+from typing import Callable, Optional, Sequence, Type, Union
 import bevy
 import discord
 import pathlib
@@ -49,7 +49,14 @@ class Bot(bevy.Injectable):
             )
 
     def _setup_event_forwarding(self):
-        self.client.event(self.on_message)
+        # Try to use the listen method if possible, otherwise fallback to using event
+        # listen is preferred as it won't override any existing event handlers defined on the client
+        register: Callable[[Callable], None] = (
+            self.client.listen()
+            if hasattr(self.client, "listen")
+            else self.client.event
+        )
+        register(self.on_message)
 
     def _tidy_app_path(self, path: Union[pathlib.Path, str]) -> pathlib.Path:
         tidy_path = pathlib.Path(path)
