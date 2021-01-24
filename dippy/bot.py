@@ -49,8 +49,8 @@ class Bot(bevy.Injectable):
             )
 
     def _setup_event_dispatch(self):
-        # Try to use the listen method if possible, otherwise fallback to using event
-        # listen is preferred as it won't override any existing event handlers defined on the client
+        # Try to use the listen method if possible, otherwise fallback to using the event method
+        # The listen method is preferred as it won't override any existing event handlers defined on the client
         register: Callable[[Callable], None] = (
             self.client.listen()
             if hasattr(self.client, "listen")
