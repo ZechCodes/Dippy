@@ -4,8 +4,9 @@ from dippy.config.loaders import yaml_loader
 from dippy.config.manager import ConfigLoader
 from dippy.events import EventHub
 from dippy.logging import Logging
-from typing import Sequence, Union
+from typing import Optional, Sequence, Union
 import bevy
+import discord
 import pathlib
 
 
@@ -14,11 +15,11 @@ class Bot(bevy.Injectable):
     config_manager: ConfigManager
     logger_factory: bevy.Factory[Logging]
     events: EventHub
+    client: discord.Client
 
     def __init__(
         self,
         bot_name: str,
-        status: str,
         /,
         application_path: Union[pathlib.Path, str],
         **kwargs,
@@ -34,19 +35,20 @@ class Bot(bevy.Injectable):
         self.component_manager.create_components()
 
     def run(self, token: str):
-        self.bot.run(token)
+        self.client.run(token)
 
     @classmethod
     def create(
         cls,
         bot_name: str,
-        status: str,
         application_path: Union[pathlib.Path, str],
         /,
         *,
+        client: Optional[discord.Client] = None,
         config_dir: str = "config",
         config_files: Sequence[str] = ("development.yaml", "production.yaml"),
         loaders: Sequence[ConfigLoader] = (yaml_loader,),
+        **client_options,
     ) -> "Bot":
         context = bevy.Context()
         context.add(
@@ -59,7 +61,9 @@ class Bot(bevy.Injectable):
         )
         context.add(context.create(ComponentManager, bot_name))
 
-        bot = context.create(cls, bot_name, status, application_path)
+        context.add(discord.Client(**client_options))
+
+        bot = context.create(cls, bot_name, application_path)
         context.add(bot)
 
         return bot
