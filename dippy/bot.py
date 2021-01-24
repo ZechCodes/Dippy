@@ -33,8 +33,23 @@ class Bot(bevy.Injectable):
         self.component_manager.load_components(pathlib.Path(application_path))
         self.component_manager.create_components()
 
+        self._setup_event_forwarding()
+
     def run(self, token: str):
         self.client.run(token)
+
+    async def on_message(self, message: discord.Message):
+        if isinstance(message.channel, discord.DMChannel):
+            await self.events.emit(
+                "direct_message", message, message.channel, message.channel.recipient
+            )
+        else:
+            await self.events.emit(
+                "message", message, message.channel, message.channel.guild
+            )
+
+    def _setup_event_forwarding(self):
+        self.client.event(self.on_message)
 
     def _tidy_app_path(self, path: Union[pathlib.Path, str]) -> pathlib.Path:
         tidy_path = pathlib.Path(path)
