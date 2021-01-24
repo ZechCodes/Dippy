@@ -17,13 +17,7 @@ class Bot(bevy.Injectable):
     events: EventHub
     client: discord.Client
 
-    def __init__(
-        self,
-        bot_name: str,
-        application_path: Union[pathlib.Path, str],
-        /,
-        **kwargs,
-    ):
+    def __init__(self, bot_name: str, application_path: Union[pathlib.Path, str], /):
         self.bot_name = bot_name
         self.path = self._tidy_app_path(application_path)
 
