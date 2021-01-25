@@ -26,6 +26,9 @@ def component_base():
 @pytest.fixture()
 def guild_fixture():
     class CustomGuild(discord.Guild):
+        def _from_data(self, guild):
+            self.id = int(guild["id"])
+
         def __repr__(self):
             attrs = ("id", "name", "chunked")
             resolved = ["%s=%r" % (attr, getattr(self, attr)) for attr in attrs]
