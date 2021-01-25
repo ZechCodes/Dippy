@@ -3,7 +3,7 @@ from asyncio import iscoroutine, iscoroutinefunction
 from collections import defaultdict
 from dippy.filters.filters import BaseFilter, GlobalFilter
 from types import MethodType
-from typing import Any, Callable, Coroutine, Dict, List, Set, Tuple, Union
+from typing import Any, Callable, Coroutine, Dict, List, Optional, Set, Tuple, Union
 
 
 class EventHub:
@@ -13,15 +13,16 @@ class EventHub:
     async def emit(
         self,
         event_name: str,
-        event_data: Dict[str, Any],
-        filter_data: Dict[str, Any] = None,
+        event_data: Optional[Dict[str, Any]] = None,
+        filter_data: Optional[Dict[str, Any]] = None,
     ):
         """Emits an event calling all coroutines that have been registered."""
+        data = event_data if event_data else {}
         for handler in self._handlers.get(event_name, []):
             if not isinstance(handler, EventHandler) or handler.filters.matches(
                 filter_data
             ):
-                args, kwargs = self._build_args_for_handler(handler, event_data)
+                args, kwargs = self._build_args_for_handler(handler, data)
                 await handler(*args, **kwargs)
 
     def on(self, event_name: str, callback: Callable[[], Coroutine]):
