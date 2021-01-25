@@ -2,12 +2,12 @@ from __future__ import annotations
 from asyncio import iscoroutine, iscoroutinefunction
 from collections import defaultdict
 from types import MethodType
-from typing import Any, Callable, Coroutine, Dict, List, Tuple
+from typing import Any, Callable, Coroutine, Dict, List, Set, Tuple, Union
 
 
 class EventHub:
     def __init__(self):
-        self._handlers: dict[str, set] = defaultdict(set)
+        self._handlers: Dict[str, Set[Union[Callable, EventHandler]]] = defaultdict(set)
 
     async def emit(
         self,
@@ -24,7 +24,11 @@ class EventHub:
         """Registers a coroutine to listen for an event.
 
         Raises ValueError if the callback is not a coroutine."""
-        if not iscoroutine(callback) and not iscoroutinefunction(callback):
+        if (
+            not isinstance(callback, EventHandler)
+            and not iscoroutine(callback)
+            and not iscoroutinefunction(callback)
+        ):
             raise ValueError(
                 f"Event handlers must be coroutines, received a callback of type {type(callback)}"
             )
@@ -42,19 +46,21 @@ class EventHub:
         args = []
         kwargs = {}
 
-        num_positional = handler.__code__.co_posonlyargcount
-        num_args = handler.__code__.co_argcount
+        callback = handler.callback if isinstance(handler, EventHandler) else handler
 
-        has_args = bool(handler.__code__.co_flags & 0x04)
-        has_kwargs = bool(handler.__code__.co_flags & 0x08)
+        num_positional = callback.__code__.co_posonlyargcount
+        num_args = callback.__code__.co_argcount
+
+        has_args = bool(callback.__code__.co_flags & 0x04)
+        has_kwargs = bool(callback.__code__.co_flags & 0x08)
 
         names = (
-            handler.__code__.co_varnames[: -(has_kwargs + has_args)]
+            callback.__code__.co_varnames[: -(has_kwargs + has_args)]
             if has_kwargs or has_args
-            else handler.__code__.co_varnames
+            else callback.__code__.co_varnames
         )
 
-        if isinstance(handler, MethodType):  # Ignore self arg
+        if isinstance(callback, MethodType):  # Ignore self arg
             names = names[1:]
             num_positional -= 1
 
@@ -65,7 +71,7 @@ class EventHub:
             if arg_name not in event_data:
                 raise NameError(
                     f"No event value found to match the parameter '{arg_name}' defined on "
-                    f"{handler.__name__} in {handler.__code__.co_filename} on line {handler.__code__.co_firstlineno}"
+                    f"{callback.__name__} in {callback.__code__.co_filename} on line {callback.__code__.co_firstlineno}"
                 )
 
             if index < num_positional:
@@ -96,7 +102,7 @@ class EventHandler:
     def __call__(self, *args, **kwargs) -> Coroutine:
         return self.callback(*args, **kwargs)
 
-    def _bind(self, instance):
+    def bind(self, instance):
         return EventHandler(
             self.event, MethodType(self.callback, instance), self.filters
         )

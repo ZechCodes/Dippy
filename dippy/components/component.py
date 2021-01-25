@@ -23,4 +23,4 @@ class Component(bevy.Injectable):
                 self.logger.debug(
                     f"Registering {attr.callback.__name__} for '{attr.event}' events"
                 )
-                self.events.on(attr.event, MethodType(attr.callback, self))
+                self.events.on(attr.event, attr.bind(self))
