@@ -1,6 +1,5 @@
 from dippy.events.hub import EventHub, EventHandler
 from dippy.logging import Logging
-from types import MethodType
 import bevy
 
 
