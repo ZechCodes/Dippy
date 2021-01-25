@@ -18,8 +18,15 @@ class MockBot(discord.ext.commands.Bot):
 
 
 @pytest.fixture()
-def guild():
-    return discord.Guild(
+def guild_fixture():
+    class CustomGuild(discord.Guild):
+        def __repr__(self):
+            attrs = ("id", "name", "chunked")
+            resolved = ["%s=%r" % (attr, getattr(self, attr)) for attr in attrs]
+            resolved.append("member_count=%r" % getattr(self, "_member_count", None))
+            return "<Guild %s>" % " ".join(resolved)
+
+    return CustomGuild(
         state="TESTING",
         data={
             "name": "Test Guild",
@@ -29,7 +36,7 @@ def guild():
 
 
 @pytest.fixture()
-def user():
+def user_fixture():
     return discord.User(
         state="TESTING",
         data={
@@ -42,10 +49,10 @@ def user():
 
 
 @pytest.fixture()
-def text_channel(guild):
+def text_channel(guild_fixture):
     return discord.TextChannel(
         state="TESTING",
-        guild=guild,
+        guild=guild_fixture,
         data={
             "name": "Test Text Channel",
             "id": 0,
@@ -56,17 +63,17 @@ def text_channel(guild):
 
 
 @pytest.fixture()
-def dm_channel(guild, user):
+def dm_channel(guild_fixture, user_fixture):
     class CustomDMChannel(discord.DMChannel):
         def __init__(self, *, me, state, data):
             self._state = state
-            self.recipient = user
+            self.recipient = user_fixture
             self.me = me
             self.id = int(data["id"])
 
     return CustomDMChannel(
         state="TESTING",
-        me=user,
+        me=user_fixture,
         data={
             "id": 0,
         },
@@ -74,7 +81,7 @@ def dm_channel(guild, user):
 
 
 @pytest.fixture()
-def message(text_channel, user):
+def message_fixture(text_channel, user_fixture):
     class CustomMessage(discord.Message):
         def _handle_member(self, member):
             self.member = member
@@ -98,8 +105,8 @@ def message(text_channel, user):
             "mention_everyone": False,
             "tts": False,
             "content": "This is content for a Test Message",
-            "author": user,
-            "member": user,
+            "author": user_fixture,
+            "member": user_fixture,
             "mentions": [],
             "mention_roles": [],
             "call": None,
@@ -109,7 +116,7 @@ def message(text_channel, user):
 
 
 @pytest.fixture()
-def direct_message(dm_channel, user):
+def direct_message(dm_channel, user_fixture):
     class CustomMessage(discord.Message):
         def _handle_member(self, member):
             self.member = member
@@ -133,8 +140,8 @@ def direct_message(dm_channel, user):
             "mention_everyone": False,
             "tts": False,
             "content": "This is content for a Test Message",
-            "author": user,
-            "member": user,
+            "author": user_fixture,
+            "member": user_fixture,
             "mentions": [],
             "mention_roles": [],
             "call": None,
@@ -150,22 +157,22 @@ def test_bot_start_up():
         bot.run("NOT A TOKEN")
 
 
-def test_bot_on_message(message, text_channel, guild):
+def test_bot_on_message(message_fixture, text_channel, guild_fixture):
     ran = False
 
     loop = asyncio.new_event_loop()
     bot = dippy.create("Test Bot", __file__, client=MockClient, loop=loop)
 
-    async def on_message(event):
+    async def on_message(message, channel, guild):
         nonlocal ran
-        assert event["channel"] is text_channel
-        assert event["guild"] is guild
-        assert event["message"] is message
+        assert channel is text_channel
+        assert guild is guild
+        assert message is message_fixture
         ran = True
         await bot.client.close()
 
     async def runner():
-        bot.client.dispatch("message", message)
+        bot.client.dispatch("message", message_fixture)
 
     bot.events.on("message", on_message)
     loop.create_task(runner())
@@ -174,7 +181,7 @@ def test_bot_on_message(message, text_channel, guild):
     assert ran
 
 
-def test_bot_on_message_using_bot(message, text_channel, guild):
+def test_bot_on_message_using_bot(message_fixture, text_channel, guild_fixture):
     ran = 0
 
     loop = asyncio.new_event_loop()
@@ -182,11 +189,11 @@ def test_bot_on_message_using_bot(message, text_channel, guild):
         "Test Bot", __file__, client=MockBot, loop=loop, command_prefix="!"
     )
 
-    async def watch_for_message(event):
+    async def watch_for_message(channel, guild, message):
         nonlocal ran
-        assert event["channel"] is text_channel
-        assert event["guild"] is guild
-        assert event["message"] is message
+        assert channel is text_channel
+        assert guild is guild_fixture
+        assert message is message_fixture
         ran += 2
         await bot.client.close()
 
@@ -195,7 +202,7 @@ def test_bot_on_message_using_bot(message, text_channel, guild):
         ran += 1
 
     async def runner():
-        bot.client.dispatch("message", message)
+        bot.client.dispatch("message", message_fixture)
 
     bot.client.event(on_message)
     bot.events.on("message", watch_for_message)
@@ -205,17 +212,17 @@ def test_bot_on_message_using_bot(message, text_channel, guild):
     assert ran == 3
 
 
-def test_bot_on_direct_message(direct_message, dm_channel, user):
+def test_bot_on_direct_message(direct_message, dm_channel, user_fixture):
     ran = False
 
     loop = asyncio.new_event_loop()
     bot = dippy.create("Test Bot", __file__, client=MockClient, loop=loop)
 
-    async def on_message(event):
+    async def on_message(channel, recipient, message):
         nonlocal ran
-        assert event["channel"] is dm_channel
-        assert event["recipient"] is user
-        assert event["message"] is direct_message
+        assert channel is dm_channel
+        assert recipient is user_fixture
+        assert message is direct_message
         ran = True
         await bot.client.close()
 
@@ -229,23 +236,23 @@ def test_bot_on_direct_message(direct_message, dm_channel, user):
     assert ran
 
 
-def test_component_on_message(message, text_channel, guild):
+def test_component_on_message(message_fixture, text_channel, guild_fixture):
     ran = False
 
     class TestComponent(dippy.Component):
         @dippy.event("message")
-        async def watch_for_messages(self, event):
+        async def watch_for_messages(self, channel, guild, message):
             nonlocal ran
-            assert event["channel"] is text_channel
-            assert event["guild"] is guild
-            assert event["message"] is message
+            assert channel is text_channel
+            assert guild is guild_fixture
+            assert message is message_fixture
             ran = True
 
     loop = asyncio.new_event_loop()
     bot = dippy.create("Test Bot", __file__, client=MockClient, loop=loop)
 
     async def runner():
-        bot.client.dispatch("message", message)
+        bot.client.dispatch("message", message_fixture)
 
     loop.create_task(runner())
     bot.run("NOT A TOKEN")

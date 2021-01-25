@@ -2,7 +2,7 @@ from __future__ import annotations
 from asyncio import iscoroutine, iscoroutinefunction
 from collections import defaultdict
 from types import MethodType
-from typing import Any, Callable, Dict, Coroutine
+from typing import Any, Callable, Coroutine, Dict, List, Tuple
 
 
 class EventHub:
@@ -17,7 +17,8 @@ class EventHub:
     ):
         """Emits an event calling all coroutines that have been registered."""
         for handler in self._handlers.get(event_name, []):
-            await handler(event_data)
+            args, kwargs = self._build_args_for_handler(handler, event_data)
+            await handler(*args, **kwargs)
 
     def on(self, event_name: str, callback: Callable[[], Coroutine]):
         """Registers a coroutine to listen for an event.
@@ -33,6 +34,55 @@ class EventHub:
     def stop(self, event_name: str, callback: Callable[[], Coroutine]):
         """Removes a callback from listening for an event."""
         self._handlers[event_name].remove(callback)
+
+    def _build_args_for_handler(
+        self, handler: Callable, event_data: Dict[str, Any]
+    ) -> Tuple[List[Any], Dict[str, Any]]:
+        positional = []
+        args = []
+        kwargs = {}
+
+        num_positional = handler.__code__.co_posonlyargcount
+        num_args = handler.__code__.co_argcount
+
+        has_args = bool(handler.__code__.co_flags & 0x04)
+        has_kwargs = bool(handler.__code__.co_flags & 0x08)
+
+        names = (
+            handler.__code__.co_varnames[: -(has_kwargs + has_args)]
+            if has_kwargs or has_args
+            else handler.__code__.co_varnames
+        )
+
+        if isinstance(handler, MethodType):  # Ignore self arg
+            names = names[1:]
+            num_positional -= 1
+
+        for index, arg_name in enumerate(names):
+            if arg_name.startswith("@"):  # Ignore PyTest
+                continue
+
+            if arg_name not in event_data:
+                raise NameError(
+                    f"No event value found to match the parameter '{arg_name}' defined on "
+                    f"{handler.__name__} in {handler.__code__.co_filename} on line {handler.__code__.co_firstlineno}"
+                )
+
+            if index < num_positional:
+                positional.append(event_data[arg_name])
+
+            elif index < num_args + num_positional:
+                args.append(event_data[arg_name])
+
+            else:
+                kwargs[arg_name] = event_data[arg_name]
+
+        if has_kwargs:
+            kwargs.update(
+                {name: value for name, value in event_data.items() if name not in names}
+            )
+
+        return args, kwargs
 
 
 class EventHandler:

@@ -4,28 +4,28 @@ import asyncio
 
 
 def test_event_emit():
-    data = "foobar"
+    data = {"arg": "foobar"}
     event_data = None
 
-    async def listener(event):
+    async def listener(arg):
         nonlocal event_data
-        event_data = event
+        event_data = arg
 
     hub = EventHub()
     hub.on("testing", listener)
     asyncio.new_event_loop().run_until_complete(hub.emit("testing", data))
 
-    assert data == event_data
+    assert data["arg"] == event_data
 
 
 def test_event_emit_multiple_handlers():
-    data = "foobar"
+    data = {"arg": "foobar"}
     event_data = []
 
-    async def listener_a(event):
+    async def listener_a(arg):
         event_data.append("a")
 
-    async def listener_b(event):
+    async def listener_b(arg):
         event_data.append("b")
 
     hub = EventHub()
@@ -37,13 +37,13 @@ def test_event_emit_multiple_handlers():
 
 
 def test_event_stop():
-    data = "foobar"
+    data = {"arg": "foobar"}
     event_data = []
 
-    async def listener_a(event):
+    async def listener_a(arg):
         event_data.append("a")
 
-    async def listener_b(event):
+    async def listener_b(arg):
         event_data.append("b")
 
     hub = EventHub()
@@ -55,23 +55,33 @@ def test_event_stop():
     assert sorted(event_data) == ["b"]
 
 
-def test_event_stop():
-    data = "foobar"
+def test_invalid_arg_name():
+    data = {"arg": "foobar"}
     event_data = []
 
-    async def listener_a(event):
-        event_data.append("a")
-
-    async def listener_b(event):
-        event_data.append("b")
+    async def listener(arg_doesnt_exist):
+        ...
 
     hub = EventHub()
-    hub.on("testing", listener_a)
-    hub.on("testing", listener_b)
-    hub.stop("testing", listener_a)
+    hub.on("testing", listener)
+
+    with raises(NameError):
+        asyncio.new_event_loop().run_until_complete(hub.emit("testing", data))
+
+
+def test_keyward_args():
+    data = {"arg": "foo", "arg2": "bar"}
+    event_data = []
+
+    async def listener(arg, *, arg2):
+        event_data.append(f"{arg}{arg2}")
+
+    hub = EventHub()
+    hub.on("testing", listener)
+
     asyncio.new_event_loop().run_until_complete(hub.emit("testing", data))
 
-    assert sorted(event_data) == ["b"]
+    assert event_data == ["foobar"]
 
 
 def test_event_register_function():
