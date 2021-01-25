@@ -51,6 +51,15 @@ class Bot(bevy.Injectable):
                 },
                 filter_data,
             )
+        elif isinstance(message.channel, discord.GroupChannel):
+            await self.events.emit(
+                "group_message",
+                {
+                    "message": message,
+                    "channel": message.channel,
+                },
+                filter_data,
+            )
         else:
             await self.events.emit(
                 "message",
