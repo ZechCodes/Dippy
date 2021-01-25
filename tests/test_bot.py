@@ -18,6 +18,12 @@ class MockBot(discord.ext.commands.Bot):
 
 
 @pytest.fixture()
+def component_base():
+    dippy.Component.__components__ = []
+    return dippy.Component
+
+
+@pytest.fixture()
 def guild_fixture():
     class CustomGuild(discord.Guild):
         def __repr__(self):
@@ -236,10 +242,12 @@ def test_bot_on_direct_message(direct_message, dm_channel, user_fixture):
     assert ran
 
 
-def test_component_on_message(message_fixture, text_channel, guild_fixture):
+def test_component_on_message(
+    message_fixture, text_channel, guild_fixture, component_base
+):
     ran = False
 
-    class TestComponent(dippy.Component):
+    class TestComponent(component_base):
         @dippy.event("message")
         async def watch_for_messages(self, channel, guild, message):
             nonlocal ran
