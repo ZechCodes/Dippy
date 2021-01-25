@@ -69,6 +69,20 @@ def text_channel(guild_fixture):
 
 
 @pytest.fixture()
+def alt_text_channel(guild_fixture):
+    return discord.TextChannel(
+        state="TESTING",
+        guild=guild_fixture,
+        data={
+            "name": "Test ALT Text Channel",
+            "id": 1,
+            "type": "TEXT",
+            "position": 1,
+        },
+    )
+
+
+@pytest.fixture()
 def dm_channel(guild_fixture, user_fixture):
     class CustomDMChannel(discord.DMChannel):
         def __init__(self, *, me, state, data):
@@ -111,6 +125,41 @@ def message_fixture(text_channel, user_fixture):
             "mention_everyone": False,
             "tts": False,
             "content": "This is content for a Test Message",
+            "author": user_fixture,
+            "member": user_fixture,
+            "mentions": [],
+            "mention_roles": [],
+            "call": None,
+            "flags": [],
+        },
+    )
+
+
+@pytest.fixture()
+def alt_message_fixture(alt_text_channel, user_fixture):
+    class CustomMessage(discord.Message):
+        def _handle_member(self, member):
+            self.member = member
+
+        def _handle_author(self, author):
+            self.author = author
+
+    return CustomMessage(
+        state="TESTING",
+        channel=alt_text_channel,
+        data={
+            "id": 1,
+            "webhook_id": 0,
+            "attachments": [],
+            "embeds": [],
+            "application": None,
+            "activity": None,
+            "edited_timestamp": None,
+            "type": None,
+            "pinned": False,
+            "mention_everyone": False,
+            "tts": False,
+            "content": "This is content for a ALT Test Message",
             "author": user_fixture,
             "member": user_fixture,
             "mentions": [],
