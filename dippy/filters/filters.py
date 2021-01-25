@@ -1,8 +1,15 @@
 from __future__ import annotations
 from abc import ABC, abstractmethod
-from dippy.filters.event import *
 from enum import Enum, auto
-from typing import Callable, Iterable
+from typing import Any, Callable, Dict, Iterable
+
+
+ChannelID = int
+EventData = Dict[str, Any]
+GuildID = int
+Label = str
+RoleID = int
+UserID = int
 
 
 class AggregationType(Enum):
@@ -13,7 +20,7 @@ class AggregationType(Enum):
 
 class BaseFilter(ABC):
     @abstractmethod
-    def matches(self, event: Event) -> bool:
+    def matches(self, event: EventData) -> bool:
         """ Determines if the event matches the filter. """
         return False
 
@@ -37,13 +44,13 @@ class InverseFilter(BaseFilter):
     def __init__(self, filter_: BaseFilter):
         self.filter = filter_
 
-    def matches(self, event: Event) -> bool:
+    def matches(self, event: EventData) -> bool:
         """ Matches all events that do not match the underlying filter. """
         return not self.filter.matches(event)
 
 
 class AggregateFilter(BaseFilter):
-    """ This filter aggregates the results of multiple filters using an aggregate method.
+    """This filter aggregates the results of multiple filters using an aggregate method.
 
     This filter takes a series of filters, an aggregate method that must take an iterable of bools and returns a bool,
     and finally an aggregation type to allow the aggregate to capture other filters.
@@ -59,7 +66,7 @@ class AggregateFilter(BaseFilter):
         self.filters = filters
         self.method = method
 
-    def matches(self, event: Event) -> bool:
+    def matches(self, event: EventData) -> bool:
         """ Passes the event to all filters and gives the aggregate iterable result to the aggregation method. """
         return self.method(filter_.matches(event) for filter_ in self.filters)
 
@@ -79,7 +86,7 @@ class AggregateFilter(BaseFilter):
 class GlobalFilter(BaseFilter):
     """ This filter will match any event. """
 
-    def matches(self, _: Event) -> bool:
+    def matches(self, _: EventData) -> bool:
         """ Matches all events. """
         return True
 
@@ -90,9 +97,9 @@ class LabelFilter(BaseFilter):
     def __init__(self, *labels: Label):
         self.labels = set(labels)
 
-    def matches(self, event: Event) -> bool:
+    def matches(self, event: EventData) -> bool:
         """ Checks that an event has at least one label in common with the current filter. """
-        return bool(self.labels & event.labels)
+        return bool(self.labels & event.get("labels", set()))
 
 
 class GuildFilter(BaseFilter):
@@ -101,9 +108,9 @@ class GuildFilter(BaseFilter):
     def __init__(self, *guild_ids: GuildID):
         self.guild_ids = guild_ids
 
-    def matches(self, event: Event) -> bool:
+    def matches(self, event: EventData) -> bool:
         """ Checks that the event guild ID matches any of the guild IDs given to the filter. """
-        return event.guild_id in self.guild_ids
+        return "guild_id" in event and event["guild_id"] in self.guild_ids
 
 
 class ChannelFilter(BaseFilter):
@@ -112,9 +119,9 @@ class ChannelFilter(BaseFilter):
     def __init__(self, *channel_ids: ChannelID):
         self.channel_ids = channel_ids
 
-    def matches(self, event: Event) -> bool:
+    def matches(self, event: EventData) -> bool:
         """ Checks that the event channel ID matches any of the channel IDs given to the filter. """
-        return event.channel_id in self.channel_ids
+        return "channel_id" in event and event["channel_id"] in self.channel_ids
 
 
 class UserFilter(BaseFilter):
@@ -123,9 +130,9 @@ class UserFilter(BaseFilter):
     def __init__(self, *user_ids: UserID):
         self.user_ids = user_ids
 
-    def matches(self, event: Event) -> bool:
+    def matches(self, event: EventData) -> bool:
         """ Checks that the event user ID matches any of the user IDs given to the filter. """
-        return event.member_id in self.user_ids
+        return "user_id" in event and event["user_id"] in self.user_ids
 
 
 class RoleFilter(BaseFilter):
@@ -134,6 +141,6 @@ class RoleFilter(BaseFilter):
     def __init__(self, *role_ids: RoleID):
         self.role_ids = set(role_ids)
 
-    def matches(self, event: Event) -> bool:
+    def matches(self, event: EventData) -> bool:
         """ Checks that the event roles match at least one of the roles given to the filter. """
-        return bool(self.role_ids & event.role_ids)
+        return bool(self.role_ids & event.get("role_ids", set()))
