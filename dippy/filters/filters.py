@@ -167,4 +167,4 @@ class MessageFilter(BaseFilter):
 
     def matches(self, event: EventData) -> bool:
         """ Checks that the event messages match at least one of the messages given to the filter. """
-        return bool(self.message_ids & event.get("message_ids", set()))
+        return bool(self.message_ids & event.get("message_id", set()))

@@ -156,11 +156,11 @@ def test_bot_on_message(message, text_channel, guild):
     loop = asyncio.new_event_loop()
     bot = dippy.create("Test Bot", __file__, client=MockClient, loop=loop)
 
-    async def on_message(m: discord.Message, c: discord.TextChannel, g: discord.Guild):
+    async def on_message(event):
         nonlocal ran
-        assert c is text_channel
-        assert g is guild
-        assert m is message
+        assert event["channel"] is text_channel
+        assert event["guild"] is guild
+        assert event["message"] is message
         ran = True
         await bot.client.close()
 
@@ -182,13 +182,11 @@ def test_bot_on_message_using_bot(message, text_channel, guild):
         "Test Bot", __file__, client=MockBot, loop=loop, command_prefix="!"
     )
 
-    async def watch_for_message(
-        m: discord.Message, c: discord.TextChannel, g: discord.Guild
-    ):
+    async def watch_for_message(event):
         nonlocal ran
-        assert c is text_channel
-        assert g is guild
-        assert m is message
+        assert event["channel"] is text_channel
+        assert event["guild"] is guild
+        assert event["message"] is message
         ran += 2
         await bot.client.close()
 
@@ -213,11 +211,11 @@ def test_bot_on_direct_message(direct_message, dm_channel, user):
     loop = asyncio.new_event_loop()
     bot = dippy.create("Test Bot", __file__, client=MockClient, loop=loop)
 
-    async def on_message(m: discord.Message, c: discord.DMChannel, r: discord.User):
+    async def on_message(event):
         nonlocal ran
-        assert c is dm_channel
-        assert r is user
-        assert m is direct_message
+        assert event["channel"] is dm_channel
+        assert event["recipient"] is user
+        assert event["message"] is direct_message
         ran = True
         await bot.client.close()
 
@@ -236,11 +234,11 @@ def test_component_on_message(message, text_channel, guild):
 
     class TestComponent(dippy.Component):
         @dippy.event("message")
-        async def watch_for_messages(self, m, c, g):
+        async def watch_for_messages(self, event):
             nonlocal ran
-            assert c is text_channel
-            assert g is guild
-            assert m is message
+            assert event["channel"] is text_channel
+            assert event["guild"] is guild
+            assert event["message"] is message
             ran = True
 
     loop = asyncio.new_event_loop()

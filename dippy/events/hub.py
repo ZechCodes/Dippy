@@ -2,17 +2,22 @@ from __future__ import annotations
 from asyncio import iscoroutine, iscoroutinefunction
 from collections import defaultdict
 from types import MethodType
-from typing import Callable, Coroutine
+from typing import Any, Callable, Dict, Coroutine
 
 
 class EventHub:
     def __init__(self):
         self._handlers: dict[str, set] = defaultdict(set)
 
-    async def emit(self, event_name: str, *event_data):
+    async def emit(
+        self,
+        event_name: str,
+        event_data: Dict[str, Any],
+        filter_data: Dict[str, Any] = None,
+    ):
         """Emits an event calling all coroutines that have been registered."""
         for handler in self._handlers.get(event_name, []):
-            await handler(*event_data)
+            await handler(event_data)
 
     def on(self, event_name: str, callback: Callable[[], Coroutine]):
         """Registers a coroutine to listen for an event.

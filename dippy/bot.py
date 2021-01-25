@@ -4,7 +4,7 @@ from dippy.config.loaders import yaml_loader
 from dippy.config.manager import ConfigLoader
 from dippy.events import EventHub
 from dippy.logging import Logging
-from typing import Callable, Optional, Sequence, Type, Union
+from typing import Any, Callable, Dict, Optional, Sequence, Type, Union
 import bevy
 import discord
 import pathlib
@@ -39,14 +39,50 @@ class Bot(bevy.Injectable):
         self.client.run(token)
 
     async def on_message(self, message: discord.Message):
+        filter_data = self._get_user_event_data(message.author)
+        filter_data.update(self._get_message_event_data(message))
         if isinstance(message.channel, discord.DMChannel):
             await self.events.emit(
-                "direct_message", message, message.channel, message.channel.recipient
+                "direct_message",
+                {
+                    "message": message,
+                    "channel": message.channel,
+                    "recipient": message.channel.recipient,
+                },
+                filter_data,
             )
         else:
             await self.events.emit(
-                "message", message, message.channel, message.channel.guild
+                "message",
+                {
+                    "message": message,
+                    "channel": message.channel,
+                    "guild": message.guild,
+                },
+                filter_data,
             )
+
+    def _get_user_event_data(
+        self, user: Union[discord.Member, discord.User]
+    ) -> Dict[str, Any]:
+        data = {"user_id": user.id}
+        if isinstance(user, discord.Member):
+            data["guild_id"] = user.guild.id
+            data["role_ids"] = set(role.id for role in user.roles)
+
+        return data
+
+    def _get_message_event_data(
+        self, message: discord.Message, *, ignore_reactions: bool = False
+    ) -> Dict[str, Any]:
+        data = {"message_id": message.id, "channel_id": message.channel.id}
+        if message.guild:
+            data["guild_id"] = message.guild.id
+
+        if not ignore_reactions:
+            data["reaction_ids"] = set(reaction.id for reaction in message.reactions)
+
+        return data
 
     def _setup_event_dispatch(self):
         # Try to use the listen method if possible, otherwise fallback to using the event method
