@@ -315,3 +315,26 @@ def test_component_on_message(
     bot.run("NOT A TOKEN")
 
     assert ran
+
+
+def test_component_filters(message_fixture, alt_message_fixture, component_base):
+    ran = 0
+
+    class TestComponent(component_base):
+        @dippy.event("message", dippy.filters.ChannelFilter(0))
+        async def watch_for_messages(self, channel, message):
+            nonlocal ran
+            assert message is message_fixture
+            ran += 1
+
+    loop = asyncio.new_event_loop()
+    bot = dippy.create("Test Bot", __file__, client=MockClient, loop=loop)
+
+    async def runner():
+        bot.client.dispatch("message", message_fixture)
+        bot.client.dispatch("message", alt_message_fixture)
+
+    loop.create_task(runner())
+    bot.run("NOT A TOKEN")
+
+    assert ran == 1

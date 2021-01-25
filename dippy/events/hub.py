@@ -1,6 +1,7 @@
 from __future__ import annotations
 from asyncio import iscoroutine, iscoroutinefunction
 from collections import defaultdict
+from dippy.filters.filters import BaseFilter, GlobalFilter
 from types import MethodType
 from typing import Any, Callable, Coroutine, Dict, List, Set, Tuple, Union
 
@@ -17,8 +18,11 @@ class EventHub:
     ):
         """Emits an event calling all coroutines that have been registered."""
         for handler in self._handlers.get(event_name, []):
-            args, kwargs = self._build_args_for_handler(handler, event_data)
-            await handler(*args, **kwargs)
+            if not isinstance(handler, EventHandler) or handler.filters.matches(
+                filter_data
+            ):
+                args, kwargs = self._build_args_for_handler(handler, event_data)
+                await handler(*args, **kwargs)
 
     def on(self, event_name: str, callback: Callable[[], Coroutine]):
         """Registers a coroutine to listen for an event.
@@ -92,12 +96,12 @@ class EventHub:
 
 
 class EventHandler:
-    def __init__(self, event: str, callback: Callable[[], Coroutine]):
-        self.event = event
+    def __init__(
+        self, event_name: str, callback: Callable[[], Coroutine], filters: BaseFilter
+    ):
         self.callback = callback
-
-    def __get__(self, instance) -> Callable:
-        return self._bind(instance)
+        self.event = event_name
+        self.filters = filters
 
     def __call__(self, *args, **kwargs) -> Coroutine:
         return self.callback(*args, **kwargs)
@@ -108,8 +112,8 @@ class EventHandler:
         )
 
 
-def event(event_name: str) -> Callable:
+def event(event_name: str, filters: BaseFilter = GlobalFilter()) -> Callable:
     def register(callback: Callable[[], Coroutine]) -> EventHandler:
-        return EventHandler(event_name, callback)
+        return EventHandler(event_name, callback, filters)
 
     return register
