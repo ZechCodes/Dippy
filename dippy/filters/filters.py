@@ -8,6 +8,8 @@ ChannelID = int
 EventData = Dict[str, Any]
 GuildID = int
 Label = str
+MessageID = int
+ReactionID = int
 RoleID = int
 UserID = int
 
@@ -144,3 +146,25 @@ class RoleFilter(BaseFilter):
     def matches(self, event: EventData) -> bool:
         """ Checks that the event roles match at least one of the roles given to the filter. """
         return bool(self.role_ids & event.get("role_ids", set()))
+
+
+class ReactionFilter(BaseFilter):
+    """ This filter only matches events that have at least one matching reaction. """
+
+    def __init__(self, *reaction_ids: ReactionID):
+        self.reaction_ids = set(reaction_ids)
+
+    def matches(self, event: EventData) -> bool:
+        """ Checks that the event reactions match at least one of the reactions given to the filter. """
+        return bool(self.reaction_ids & event.get("reaction_ids", set()))
+
+
+class MessageFilter(BaseFilter):
+    """ This filter only matches events that have at least one matching message. """
+
+    def __init__(self, *message_ids: MessageID):
+        self.message_ids = set(message_ids)
+
+    def matches(self, event: EventData) -> bool:
+        """ Checks that the event messages match at least one of the messages given to the filter. """
+        return bool(self.message_ids & event.get("message_ids", set()))
