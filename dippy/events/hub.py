@@ -106,10 +106,11 @@ class EventHandler:
     def __call__(self, *args, **kwargs) -> Coroutine:
         return self.callback(*args, **kwargs)
 
-    def bind(self, instance):
-        return EventHandler(
-            self.event, MethodType(self.callback, instance), self.filters
+    def bind(self, instance, component_filters: Optional[BaseFilter] = None):
+        filters = (
+            component_filters & self.filters if component_filters else self.filters
         )
+        return EventHandler(self.event, MethodType(self.callback, instance), filters)
 
 
 def event(event_name: str, filters: BaseFilter = GlobalFilter()) -> Callable:
