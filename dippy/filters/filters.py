@@ -151,12 +151,12 @@ class RoleFilter(BaseFilter):
 class ReactionFilter(BaseFilter):
     """ This filter only matches events that have at least one matching reaction. """
 
-    def __init__(self, *reaction_ids: ReactionID):
-        self.reaction_ids = set(reaction_ids)
+    def __init__(self, *emoji_ids: ReactionID):
+        self.emoji_ids = set(emoji_ids)
 
     def matches(self, event: EventData) -> bool:
         """ Checks that the event reactions match at least one of the reactions given to the filter. """
-        return bool(self.reaction_ids & event.get("reaction_ids", set()))
+        return bool(self.emoji_ids & event.get("emoji_ids", set()))
 
 
 class MessageFilter(BaseFilter):
