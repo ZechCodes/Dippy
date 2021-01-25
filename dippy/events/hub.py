@@ -91,10 +91,15 @@ class EventHandler:
         self.callback = callback
 
     def __get__(self, instance) -> Callable:
-        return MethodType(self, instance)
+        return self._bind(instance)
 
     def __call__(self, *args, **kwargs) -> Coroutine:
         return self.callback(*args, **kwargs)
+
+    def _bind(self, instance):
+        return EventHandler(
+            self.event, MethodType(self.callback, instance), self.filters
+        )
 
 
 def event(event_name: str) -> Callable:
