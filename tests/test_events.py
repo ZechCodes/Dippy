@@ -55,20 +55,6 @@ def test_event_stop():
     assert sorted(event_data) == ["b"]
 
 
-def test_invalid_arg_name():
-    data = {"arg": "foobar"}
-    event_data = []
-
-    async def listener(arg_doesnt_exist):
-        ...
-
-    hub = EventHub()
-    hub.on("testing", listener)
-
-    with raises(NameError):
-        asyncio.new_event_loop().run_until_complete(hub.emit("testing", data))
-
-
 def test_keyward_args():
     data = {"arg": "foo", "arg2": "bar"}
     event_data = []
