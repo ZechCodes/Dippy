@@ -1,121 +1,70 @@
 from __future__ import annotations
-from asyncio import iscoroutine, iscoroutinefunction
 from collections import defaultdict
-from dippy.filters.filters import BaseFilter, GlobalFilter
-from types import MethodType
-from typing import Any, Callable, Coroutine, Dict, List, Optional, Set, Tuple, Union
+from dippy.filters.filters import GlobalFilter
+from typing import Any, Callable, Coroutine, Dict, Optional, Union
+
+
+Callback = Union[Callable[[], Any], Coroutine[Any, Any, Any]]
+Data = Dict[str, Any]
+Filter = Callable[[Data], bool]
 
 
 class EventHub:
     def __init__(self):
-        self._handlers: Dict[str, Set[Union[Callable, EventHandler]]] = defaultdict(set)
+        self._handlers: Dict[str, Dict[Callback, EventHandler]] = defaultdict(dict)
 
     async def emit(
         self,
         event_name: str,
-        event_data: Optional[Dict[str, Any]] = None,
-        filter_data: Optional[Dict[str, Any]] = None,
+        event_data: Optional[Data] = None,
+        filter_data: Optional[Data] = None,
     ):
-        """Emits an event calling all coroutines that have been registered."""
+        """Runs all handlers for an event."""
         data = event_data if event_data else {}
-        for handler in self._handlers.get(event_name, []):
-            if not isinstance(handler, EventHandler) or handler.filters.matches(
-                filter_data
-            ):
-                args, kwargs = self._build_args_for_handler(handler, data)
-                await handler(*args, **kwargs)
+        for handler in self._handlers.get(event_name, {}).values():
+            if handler.filter(filter_data):
+                result = handler.callback(**data)
+                if hasattr(result, "__await__"):
+                    await result
 
-    def on(self, event_name: str, callback: Callable[[], Coroutine]):
-        """Registers a coroutine to listen for an event.
+    def off(self, event_name: str, callback: Callback):
+        self._handlers.get(event_name, {}).pop(callback)
 
-        Raises ValueError if the callback is not a coroutine."""
-        if (
-            not isinstance(callback, EventHandler)
-            and not iscoroutine(callback)
-            and not iscoroutinefunction(callback)
-        ):
-            raise ValueError(
-                f"Event handlers must be coroutines, received a callback of type {type(callback)}"
-            )
-
-        self._handlers[event_name].add(callback)
-
-    def stop(self, event_name: str, callback: Callable[[], Coroutine]):
-        """Removes a callback from listening for an event."""
-        self._handlers[event_name].remove(callback)
-
-    def _build_args_for_handler(
-        self, handler: Callable, event_data: Dict[str, Any]
-    ) -> Tuple[List[Any], Dict[str, Any]]:
-        positional = []
-        args = []
-        kwargs = {}
-
-        callback = handler.callback if isinstance(handler, EventHandler) else handler
-
-        num_positional = callback.__code__.co_posonlyargcount
-        num_args = callback.__code__.co_argcount
-
-        has_args = bool(callback.__code__.co_flags & 0x04)
-        has_kwargs = bool(callback.__code__.co_flags & 0x08)
-
-        names = (
-            callback.__code__.co_varnames[: -(has_kwargs + has_args)]
-            if has_kwargs or has_args
-            else callback.__code__.co_varnames
-        )
-
-        if isinstance(callback, MethodType):  # Ignore self arg
-            names = names[1:]
-            num_positional -= 1
-
-        for index, arg_name in enumerate(names):
-            if arg_name.startswith("@"):  # Ignore PyTest
-                continue
-
-            if arg_name not in event_data:
-                raise NameError(
-                    f"No event value found to match the parameter '{arg_name}' defined on "
-                    f"{callback.__name__} in {callback.__code__.co_filename} on line {callback.__code__.co_firstlineno}"
-                )
-
-            if index < num_positional:
-                positional.append(event_data[arg_name])
-
-            elif index < num_args + num_positional:
-                args.append(event_data[arg_name])
-
-            else:
-                kwargs[arg_name] = event_data[arg_name]
-
-        if has_kwargs:
-            kwargs.update(
-                {name: value for name, value in event_data.items() if name not in names}
-            )
-
-        return args, kwargs
+    def on(
+        self,
+        event_name: str,
+        callback: Callback,
+        predicate: Filter = GlobalFilter(),
+    ) -> EventHandler:
+        """Registers a callback to listen for an event. If the callack is a coroutine or returns an awaitable it'll be
+        awaited."""
+        handler = EventHandler(event_name, callback, predicate, self)
+        self._handlers[event_name][callback] = handler
+        return handler
 
 
 class EventHandler:
     def __init__(
-        self, event_name: str, callback: Callable[[], Coroutine], filters: BaseFilter
+        self, event: str, callback: Callback, predicate: Filter, hub: EventHub
     ):
-        self.callback = callback
-        self.event = event_name
-        self.filters = filters
+        self._callback = callback
+        self._event = event
+        self._filter = predicate
+        self._stopped = False
+        self._hub = hub
 
-    def __call__(self, *args, **kwargs) -> Coroutine:
-        return self.callback(*args, **kwargs)
+    @property
+    def callback(self) -> Callback:
+        return self._callback
 
-    def bind(self, instance, component_filters: Optional[BaseFilter] = None):
-        filters = (
-            component_filters & self.filters if component_filters else self.filters
-        )
-        return EventHandler(self.event, MethodType(self.callback, instance), filters)
+    @property
+    def filter(self) -> Filter:
+        return self._filter
 
+    @property
+    def stopped(self) -> bool:
+        return self._stopped
 
-def event(event_name: str, filters: BaseFilter = GlobalFilter()) -> Callable:
-    def register(callback: Callable[[], Coroutine]) -> EventHandler:
-        return EventHandler(event_name, callback, filters)
-
-    return register
+    def stop(self):
+        self._stopped = True
+        self._hub.off(self._event, self.callback)
