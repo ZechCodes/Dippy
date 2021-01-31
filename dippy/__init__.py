@@ -1,5 +1,5 @@
-from dippy.events import event
 import dippy.config as config
+from dippy.components.handlers import event
 from dippy.filters.filters import (
     BaseFilter as Filter,
     ChannelFilter,
