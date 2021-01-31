@@ -68,12 +68,3 @@ def test_keyward_args():
     asyncio.new_event_loop().run_until_complete(hub.emit("testing", data))
 
     assert event_data == ["foobar"]
-
-
-def test_event_register_function():
-    def listener(event):
-        return
-
-    hub = EventHub()
-    with raises(ValueError):
-        hub.on("testing", listener)
