@@ -39,6 +39,9 @@ class BaseFilter(ABC):
     def __invert__(self) -> InverseFilter:
         return InverseFilter(self)
 
+    def __call__(self, event: EventData) -> bool:
+        return self.matches(event)
+
 
 class InverseFilter(BaseFilter):
     """ This filter takes another filter and matches the inverse of that filter. """
