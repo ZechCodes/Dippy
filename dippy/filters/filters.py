@@ -62,7 +62,7 @@ class AggregateFilter(BaseFilter):
         self,
         *filters: BaseFilter,
         method: Callable[[Iterable[bool]], bool],
-        aggregation_type: AggregationType = AggregationType.NONE
+        aggregation_type: AggregationType = AggregationType.NONE,
     ):
         self.aggregation_type = aggregation_type
         self.filters = filters
