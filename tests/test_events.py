@@ -49,7 +49,7 @@ def test_event_stop():
     hub = EventHub()
     hub.on("testing", listener_a)
     hub.on("testing", listener_b)
-    hub.stop("testing", listener_a)
+    hub.off("testing", listener_a)
     asyncio.new_event_loop().run_until_complete(hub.emit("testing", data))
 
     assert sorted(event_data) == ["b"]
