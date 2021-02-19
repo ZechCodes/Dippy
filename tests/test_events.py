@@ -7,7 +7,7 @@ def test_event():
 
     def callback(message):
         nonlocal result
-        result = message.args[0]
+        result = message
 
     async def test(loop):
         hub = EventHub(loop=loop)
