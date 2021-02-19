@@ -12,8 +12,9 @@ class Client(Bot, Injectable):
 
     def __init__(self, name: str = "Dippy.bot", *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.log = self.log_factory(name)
         Logging.setup_logger()
+
+        self.log = self.log_factory(name)
         self.extension_manager.load_extensions()
         self.extension_manager.create_extensions()
 
