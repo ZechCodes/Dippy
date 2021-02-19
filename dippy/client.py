@@ -1,6 +1,6 @@
 from bevy import Factory, Injectable
 from dippy.events import EventHub
-from dippy.extensions import ExtensionManager
+from dippy.extensions.extension import ExtensionManager
 from dippy.logging import Logging
 from discord.ext.commands import Bot
 
