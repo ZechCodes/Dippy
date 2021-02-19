@@ -45,6 +45,7 @@ class EventStream:
     def on(self, callback: Callable) -> EventWatcher:
         watcher = EventWatcher(self, callback, self._loop)
         watcher.on_stop(lambda future: self._watchers.pop(callback))
+        self._watchers[callback] = watcher
         return watcher
 
     def push(self, event: Event):
