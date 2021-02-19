@@ -1,6 +1,7 @@
 from __future__ import annotations
 from typing import Awaitable, Callable, Dict, List, Optional
 import asyncio
+import inspect
 
 
 class EventHub:
@@ -86,5 +87,5 @@ class EventWatcher:
         while True:
             event = await self._stream.next
             ret = self._callback(*event.args, **event.kwargs)
-            if hasattr(ret, "__await__"):
+            if inspect.isawaitable(ret):
                 await ret

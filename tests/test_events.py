@@ -20,3 +20,23 @@ def test_event():
     loop = asyncio.new_event_loop()
     loop.run_until_complete(test(loop))
     assert result == "foobar"
+
+
+def test_event_coroutine():
+    result = False
+
+    async def callback(message):
+        nonlocal result
+        result = message
+
+    async def test(loop):
+        hub = EventHub(loop=loop)
+        watcher = hub.on("test_event", callback)
+        await asyncio.sleep(0.1)
+        hub.emit("test_event", "foobar")
+        await asyncio.sleep(0.1)
+        watcher.off()
+
+    loop = asyncio.new_event_loop()
+    loop.run_until_complete(test(loop))
+    assert result == "foobar"
