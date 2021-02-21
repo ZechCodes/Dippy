@@ -49,7 +49,7 @@ tests = ["coverage", "hypothesis", "pympler", "pytest (>=4.3.0)", "six", "zope.i
 
 [[package]]
 name = "bevy"
-version = "0.4.1"
+version = "0.4.5"
 description = "Python Dependency Inversion made simple so you can focus on creating amazing code."
 category = "main"
 optional = false
@@ -239,7 +239,7 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "f718ecd359d1e5be74b54ed5ac04cf8b184c64e913f6f87306c1068b73f68940"
+content-hash = "6c49d417a21c6aac077eb3f3ddd0dd114df1c3fd0001035a00076a35874e878b"
 
 [metadata.files]
 aiohttp = [
@@ -294,8 +294,8 @@ attrs = [
     {file = "attrs-19.3.0.tar.gz", hash = "sha256:f7b7ce16570fe9965acd6d30101a28f62fb4a7f9e926b3bbc9b61f8b04247e72"},
 ]
 bevy = [
-    {file = "Bevy-0.4.1-py3-none-any.whl", hash = "sha256:5769991b9faeef995952444b13ca84f4c998a6af1c4c9fac20e26f0b5abb3a8d"},
-    {file = "Bevy-0.4.1.tar.gz", hash = "sha256:2c9834fce49b5cd5a6b338a2e98e2ced370028933b836d1e97560019f3f5c477"},
+    {file = "Bevy-0.4.5-py3-none-any.whl", hash = "sha256:2b263d42e3e5cdc6c6435e3c3baadf34d9f429ed8bd919394dc70ca04a941f1e"},
+    {file = "Bevy-0.4.5.tar.gz", hash = "sha256:40590ce5e2c3847e5d9ba18e6d7b5519930b2e52bdba41ace856f3e66a525d63"},
 ]
 chardet = [
     {file = "chardet-3.0.4-py2.py3-none-any.whl", hash = "sha256:fc323ffcaeaed0e0a02bf4d117757b98aed530d9ed4531e3e15460124c106691"},
