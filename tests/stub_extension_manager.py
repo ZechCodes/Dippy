@@ -1,4 +1,4 @@
-from dippy.extensions.extension import ExtensionManager
+from dippy.extensions.extension_manager import ExtensionManager
 
 
 class StubExtensionManager(ExtensionManager):

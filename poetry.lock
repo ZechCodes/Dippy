@@ -87,6 +87,14 @@ docs = ["sphinx (==3.0.3)", "sphinxcontrib-trio (==1.1.2)", "sphinxcontrib-websu
 voice = ["PyNaCl (>=1.3.0,<1.5)"]
 
 [[package]]
+name = "gully"
+version = "0.1.0"
+description = "Simple real time data stream manipulation."
+category = "main"
+optional = false
+python-versions = ">=3.7,<4.0"
+
+[[package]]
 name = "idna"
 version = "2.10"
 description = "Internationalized Domain Names in Applications (IDNA)"
@@ -231,7 +239,7 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "353501de70a96ee8b6f63a2927d639910f52706b6fbb9e9bdd29ec6aafc98ac7"
+content-hash = "f718ecd359d1e5be74b54ed5ac04cf8b184c64e913f6f87306c1068b73f68940"
 
 [metadata.files]
 aiohttp = [
@@ -300,6 +308,10 @@ colorama = [
 "discord.py" = [
     {file = "discord.py-1.6.0-py3-none-any.whl", hash = "sha256:3df148daf6fbcc7ab5b11042368a3cd5f7b730b62f09fb5d3cbceff59bcfbb12"},
     {file = "discord.py-1.6.0.tar.gz", hash = "sha256:ba8be99ff1b8c616f7b6dcb700460d0222b29d4c11048e74366954c465fdd05f"},
+]
+gully = [
+    {file = "gully-0.1.0-py3-none-any.whl", hash = "sha256:463d1b86469e49e7a8fa8ef72bdfdd2ab420300fbadae51918177ce3ae93bb6b"},
+    {file = "gully-0.1.0.tar.gz", hash = "sha256:951244d9edb8e94f7d93f21d0799526fb4f3dd422d91423597bba80dad2f6bc0"},
 ]
 idna = [
     {file = "idna-2.10-py2.py3-none-any.whl", hash = "sha256:b97d804b1e9b523befed77c48dacec60e6dcb0b5391d57af6a65a312a90648c0"},

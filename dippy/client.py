@@ -1,6 +1,6 @@
 from bevy import Factory, Injectable
 from dippy.events import EventHub
-from dippy.extensions.extension import ExtensionManager
+from dippy.extensions.extension_manager import ExtensionManager
 from dippy.logging import Logging
 from discord.ext.commands import Bot
 
@@ -15,8 +15,6 @@ class Client(Bot, Injectable):
         Logging.setup_logger()
 
         self.log = self.log_factory(name)
-        self.extension_manager.load_extensions()
-        self.extension_manager.create_extensions()
 
     def dispatch(self, event_name, *args, **kwargs):
         super(Client, self).dispatch(event_name, *args, **kwargs)
@@ -24,6 +22,14 @@ class Client(Bot, Injectable):
 
     async def on_ready(self):
         self.log.info("Bot is ready")
+
+    def run(self, *args, **kwargs):
+        self.loop.call_soon(self._setup_extensions)
+        super().run(*args, **kwargs)
+
+    def _setup_extensions(self):
+        self.extension_manager.load_extensions()
+        self.extension_manager.create_extensions()
 
     @classmethod
     def launch(cls, token: str = None, *args, **kwargs):
