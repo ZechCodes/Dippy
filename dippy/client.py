@@ -1,4 +1,4 @@
-from bevy import Factory, Injectable
+from bevy import Context, Factory, Injectable
 from dippy.events import EventHub
 from dippy.extensions.extension_manager import ExtensionManager
 from dippy.logging import Logging
@@ -33,5 +33,7 @@ class Client(Bot, Injectable):
 
     @classmethod
     def launch(cls, token: str = None, *args, **kwargs):
-        client = cls(*args, **kwargs)
+        context = Context()
+        client = context.create(cls, *args, **kwargs)
+        context.add(client)
         client.run(token)
