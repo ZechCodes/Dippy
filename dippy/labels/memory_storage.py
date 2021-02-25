@@ -8,19 +8,19 @@ class MemoryStorage(StorageInterface):
     def __init__(self):
         self._storage = defaultdict(lambda: defaultdict(dict))
 
-    def delete(self, object_type: str, object_id: int, key: str):
-        if self.has(object_type, object_id, key):
+    async def delete(self, object_type: str, object_id: int, key: str):
+        if await self.has(object_type, object_id, key):
             del self._storage[object_type][object_id][key]
 
-    def get(
+    async def get(
         self, object_type: str, object_id: int, key: str, default: Any = None
     ) -> Any:
-        if not self.has(object_type, object_id, key):
+        if not await self.has(object_type, object_id, key):
             return default
 
         return self._storage[object_type][object_id][key]
 
-    def has(self, object_type: str, object_id: int, key: str) -> bool:
+    async def has(self, object_type: str, object_id: int, key: str) -> bool:
         if object_type not in self._storage:
             return False
 
@@ -32,8 +32,8 @@ class MemoryStorage(StorageInterface):
 
         return True
 
-    def set(self, object_type: str, object_id: int, key: str, value: Any):
+    async def set(self, object_type: str, object_id: int, key: str, value: Any):
         self._storage[object_type][object_id][key] = value
 
-    def setup(self):
+    async def setup(self):
         return
